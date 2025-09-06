@@ -32,128 +32,140 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 
   if (error) {
     return (
-      <div className="crosshair-preview w-32 h-32 flex items-center justify-center">
-        <div className="text-destructive text-sm text-center">{error}</div>
+      <div className="w-40 h-40 flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg">
+        <div className="text-destructive text-sm text-center px-4">{error}</div>
       </div>
     );
   }
 
   if (!crosshair) {
     return (
-      <div className="crosshair-preview w-32 h-32 flex items-center justify-center">
-        <div className="text-muted-foreground text-sm">No preview</div>
+      <div className="w-40 h-40 flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg">
+        <div className="text-muted-foreground text-sm">Enter share code</div>
       </div>
     );
   }
-  
-  // Calculate crosshair dimensions and colors
-  const crosshairSize = crosshair.length * 4; // Scale up for visibility
-  const lineThickness = Math.max(1, crosshair.thickness * 2);
-  const gapSize = Math.max(0, crosshair.gap * 2);
-  const outlineSize = crosshair.outline;
-  
-  // Get crosshair color
-  const getCrosshairColor = () => {
-    if (crosshair.color === 5) {
-      // Custom color using RGB values
-      return `rgb(${crosshair.red}, ${crosshair.green}, ${crosshair.blue})`;
+
+  // CS2 color mapping
+  const getCS2Color = (colorIndex: number, red: number, green: number, blue: number) => {
+    switch (colorIndex) {
+      case 0: return { r: 250, g: 50, b: 50 };    // Red
+      case 1: return { r: 50, g: 250, b: 50 };    // Green
+      case 2: return { r: 255, g: 255, b: 50 };   // Yellow
+      case 3: return { r: 50, g: 50, b: 250 };    // Blue
+      case 4: return { r: 50, g: 255, b: 255 };   // Cyan
+      case 5: return { r: red, g: green, b: blue }; // Custom
+      default: return { r: 50, g: 255, b: 255 };  // Default to cyan
     }
-    // Predefined colors
-    const colors = [
-      'rgb(250, 50, 50)',   // Red
-      'rgb(50, 250, 50)',   // Green  
-      'rgb(255, 255, 50)',  // Yellow
-      'rgb(50, 50, 250)',   // Blue
-      'rgb(50, 255, 255)',  // Cyan
-    ];
-    return colors[crosshair.color] || colors[4]; // Default to cyan
   };
-  
-  const crosshairColor = getCrosshairColor();
+
+  const color = getCS2Color(crosshair.color, crosshair.red, crosshair.green, crosshair.blue);
+  const crosshairColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
   const alpha = crosshair.alphaEnabled ? crosshair.alpha / 255 : 1;
+  
+  // Scale values for better visibility (CS2 uses different units)
+  const scale = 3;
+  const size = Math.max(1, crosshair.length * scale);
+  const thickness = Math.max(1, crosshair.thickness * scale);
+  const gap = Math.max(0, crosshair.gap * scale);
+  const outlineThickness = crosshair.outlineEnabled ? Math.max(1, crosshair.outline) : 0;
+
+  const lineStyle = {
+    backgroundColor: crosshairColor,
+    opacity: alpha,
+    outline: outlineThickness > 0 ? `${outlineThickness}px solid rgba(0, 0, 0, 0.8)` : 'none',
+    outlineOffset: '0px'
+  };
 
   return (
-    <div className="crosshair-preview w-32 h-32 flex items-center justify-center relative overflow-hidden">
-      {/* Background grid for better visibility */}
-      <div className="absolute inset-0 tactical-grid opacity-30"></div>
+    <div className="w-40 h-40 flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg relative overflow-hidden">
+      {/* Dark background for contrast */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-gray-800"></div>
       
-      {/* Center dot */}
-      {crosshair.centerDotEnabled && (
-        <div 
-          className="absolute"
-          style={{
-            width: `${lineThickness}px`,
-            height: `${lineThickness}px`,
-            backgroundColor: crosshairColor,
-            opacity: alpha,
-            boxShadow: crosshair.outlineEnabled ? `0 0 0 1px rgba(0,0,0,0.8)` : 'none',
-            borderRadius: '50%',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)'
-          }}
-        />
-      )}
+      {/* Crosshair container */}
+      <div className="relative w-full h-full flex items-center justify-center">
+        
+        {/* Center dot */}
+        {crosshair.centerDotEnabled && (
+          <div 
+            className="absolute z-20"
+            style={{
+              ...lineStyle,
+              width: `${Math.max(2, thickness)}px`,
+              height: `${Math.max(2, thickness)}px`,
+              borderRadius: '50%',
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)'
+            }}
+          />
+        )}
+        
+        {/* Horizontal lines */}
+        {size > 0 && (
+          <>
+            {/* Left line */}
+            <div 
+              className="absolute z-10"
+              style={{
+                ...lineStyle,
+                width: `${size}px`,
+                height: `${thickness}px`,
+                right: `calc(50% + ${gap / 2}px)`,
+                top: '50%',
+                transform: 'translateY(-50%)'
+              }}
+            />
+            {/* Right line */}
+            <div 
+              className="absolute z-10"
+              style={{
+                ...lineStyle,
+                width: `${size}px`,
+                height: `${thickness}px`,
+                left: `calc(50% + ${gap / 2}px)`,
+                top: '50%',
+                transform: 'translateY(-50%)'
+              }}
+            />
+          </>
+        )}
+        
+        {/* Vertical lines */}
+        {size > 0 && (
+          <>
+            {/* Top line */}
+            <div 
+              className="absolute z-10"
+              style={{
+                ...lineStyle,
+                width: `${thickness}px`,
+                height: `${size}px`,
+                left: '50%',
+                bottom: `calc(50% + ${gap / 2}px)`,
+                transform: 'translateX(-50%)'
+              }}
+            />
+            {/* Bottom line */}
+            <div 
+              className="absolute z-10"
+              style={{
+                ...lineStyle,
+                width: `${thickness}px`,
+                height: `${size}px`,
+                left: '50%',
+                top: `calc(50% + ${gap / 2}px)`,
+                transform: 'translateX(-50%)'
+              }}
+            />
+          </>
+        )}
+      </div>
       
-      {/* Horizontal lines */}
-      {/* Left line */}
-      <div 
-        className="absolute"
-        style={{
-          width: `${crosshairSize}px`,
-          height: `${lineThickness}px`,
-          backgroundColor: crosshairColor,
-          opacity: alpha,
-          boxShadow: crosshair.outlineEnabled ? `0 0 0 ${outlineSize}px rgba(0,0,0,0.8)` : 'none',
-          top: '50%',
-          right: `calc(50% + ${gapSize}px)`,
-          transform: 'translateY(-50%)'
-        }}
-      />
-      {/* Right line */}
-      <div 
-        className="absolute"
-        style={{
-          width: `${crosshairSize}px`,
-          height: `${lineThickness}px`,
-          backgroundColor: crosshairColor,
-          opacity: alpha,
-          boxShadow: crosshair.outlineEnabled ? `0 0 0 ${outlineSize}px rgba(0,0,0,0.8)` : 'none',
-          top: '50%',
-          left: `calc(50% + ${gapSize}px)`,
-          transform: 'translateY(-50%)'
-        }}
-      />
-      
-      {/* Vertical lines */}
-      {/* Top line */}
-      <div 
-        className="absolute"
-        style={{
-          height: `${crosshairSize}px`,
-          width: `${lineThickness}px`,
-          backgroundColor: crosshairColor,
-          opacity: alpha,
-          boxShadow: crosshair.outlineEnabled ? `0 0 0 ${outlineSize}px rgba(0,0,0,0.8)` : 'none',
-          left: '50%',
-          bottom: `calc(50% + ${gapSize}px)`,
-          transform: 'translateX(-50%)'
-        }}
-      />
-      {/* Bottom line */}
-      <div 
-        className="absolute"
-        style={{
-          height: `${crosshairSize}px`,
-          width: `${lineThickness}px`,
-          backgroundColor: crosshairColor,
-          opacity: alpha,
-          boxShadow: crosshair.outlineEnabled ? `0 0 0 ${outlineSize}px rgba(0,0,0,0.8)` : 'none',
-          left: '50%',
-          top: `calc(50% + ${gapSize}px)`,
-          transform: 'translateX(-50%)'
-        }}
-      />
+      {/* Debug info overlay (remove in production) */}
+      <div className="absolute top-1 right-1 text-xs text-white/50 font-mono">
+        {crosshair.style}
+      </div>
     </div>
   );
 };
