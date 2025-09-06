@@ -1,62 +1,76 @@
 import { useState, useEffect } from 'react';
-
-interface CrosshairSettings {
-  size: number;
-  thickness: number;
-  gap: number;
-  outline: number;
-  dot: boolean;
-  color: string;
-}
+import { decodeCrosshairShareCode, type Crosshair, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
 
 interface CrosshairPreviewProps {
   shareCode: string;
 }
 
-// Parse CS2 share code to extract crosshair settings
-const parseShareCode = (shareCode: string): CrosshairSettings | null => {
-  if (!shareCode || !shareCode.startsWith('CSGO-')) {
-    return null;
-  }
-
-  // This is a simplified parser - in reality, CS2 share codes are base64 encoded
-  // For demo purposes, we'll generate some variations based on the code
-  const hash = shareCode.split('-').join('').slice(4);
-  const seed = hash.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  
-  return {
-    size: 2 + (seed % 8), // 2-10
-    thickness: 1 + (seed % 3), // 1-4
-    gap: -2 + (seed % 5), // -2-3
-    outline: seed % 2, // 0-1
-    dot: (seed % 2) === 1,
-    color: '#00FFFF' // Default cyan
-  };
-};
-
 export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
-  const [settings, setSettings] = useState<CrosshairSettings | null>(null);
+  const [crosshair, setCrosshair] = useState<Crosshair | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const parsed = parseShareCode(shareCode);
-    setSettings(parsed);
+    if (!shareCode?.trim()) {
+      setCrosshair(null);
+      setError(null);
+      return;
+    }
+
+    try {
+      const decoded = decodeCrosshairShareCode(shareCode);
+      setCrosshair(decoded);
+      setError(null);
+    } catch (err) {
+      setCrosshair(null);
+      if (err instanceof InvalidShareCode || err instanceof InvalidCrosshairShareCode) {
+        setError('Invalid share code format');
+      } else {
+        setError('Failed to decode share code');
+      }
+    }
   }, [shareCode]);
 
-  if (!settings) {
+  if (error) {
+    return (
+      <div className="crosshair-preview w-32 h-32 flex items-center justify-center">
+        <div className="text-destructive text-sm text-center">{error}</div>
+      </div>
+    );
+  }
+
+  if (!crosshair) {
     return (
       <div className="crosshair-preview w-32 h-32 flex items-center justify-center">
         <div className="text-muted-foreground text-sm">No preview</div>
       </div>
     );
   }
-
-  const { size, thickness, gap, outline, dot } = settings;
   
-  // Calculate crosshair dimensions
-  const crosshairSize = size * 2;
-  const lineThickness = Math.max(1, thickness);
-  const gapSize = Math.max(0, gap);
-  const outlineSize = outline;
+  // Calculate crosshair dimensions and colors
+  const crosshairSize = crosshair.length * 4; // Scale up for visibility
+  const lineThickness = Math.max(1, crosshair.thickness * 2);
+  const gapSize = Math.max(0, crosshair.gap * 2);
+  const outlineSize = crosshair.outline;
+  
+  // Get crosshair color
+  const getCrosshairColor = () => {
+    if (crosshair.color === 5) {
+      // Custom color using RGB values
+      return `rgb(${crosshair.red}, ${crosshair.green}, ${crosshair.blue})`;
+    }
+    // Predefined colors
+    const colors = [
+      'rgb(250, 50, 50)',   // Red
+      'rgb(50, 250, 50)',   // Green  
+      'rgb(255, 255, 50)',  // Yellow
+      'rgb(50, 50, 250)',   // Blue
+      'rgb(50, 255, 255)',  // Cyan
+    ];
+    return colors[crosshair.color] || colors[4]; // Default to cyan
+  };
+  
+  const crosshairColor = getCrosshairColor();
+  const alpha = crosshair.alphaEnabled ? crosshair.alpha / 255 : 1;
 
   return (
     <div className="crosshair-preview w-32 h-32 flex items-center justify-center relative overflow-hidden">
@@ -64,14 +78,15 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
       <div className="absolute inset-0 tactical-grid opacity-30"></div>
       
       {/* Center dot */}
-      {dot && (
+      {crosshair.centerDotEnabled && (
         <div 
           className="absolute"
           style={{
-            width: `${lineThickness * 2}px`,
-            height: `${lineThickness * 2}px`,
-            backgroundColor: settings.color,
-            boxShadow: `0 0 ${outlineSize * 2}px ${settings.color}`,
+            width: `${lineThickness}px`,
+            height: `${lineThickness}px`,
+            backgroundColor: crosshairColor,
+            opacity: alpha,
+            boxShadow: crosshair.outlineEnabled ? `0 0 0 1px rgba(0,0,0,0.8)` : 'none',
             borderRadius: '50%',
             top: '50%',
             left: '50%',
@@ -80,31 +95,63 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
         />
       )}
       
-      {/* Horizontal line */}
+      {/* Horizontal lines */}
+      {/* Left line */}
       <div 
         className="absolute"
         style={{
-          width: `${crosshairSize * 2 + gapSize * 2}px`,
+          width: `${crosshairSize}px`,
           height: `${lineThickness}px`,
-          background: `linear-gradient(90deg, ${settings.color} 0%, ${settings.color} ${((crosshairSize - gapSize) / (crosshairSize * 2 + gapSize * 2)) * 100}%, transparent ${((crosshairSize - gapSize) / (crosshairSize * 2 + gapSize * 2)) * 100}%, transparent ${((crosshairSize + gapSize) / (crosshairSize * 2 + gapSize * 2)) * 100}%, ${settings.color} ${((crosshairSize + gapSize) / (crosshairSize * 2 + gapSize * 2)) * 100}%)`,
-          boxShadow: outlineSize > 0 ? `0 0 ${outlineSize * 2}px ${settings.color}40` : 'none',
+          backgroundColor: crosshairColor,
+          opacity: alpha,
+          boxShadow: crosshair.outlineEnabled ? `0 0 0 ${outlineSize}px rgba(0,0,0,0.8)` : 'none',
           top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)'
+          right: `calc(50% + ${gapSize}px)`,
+          transform: 'translateY(-50%)'
+        }}
+      />
+      {/* Right line */}
+      <div 
+        className="absolute"
+        style={{
+          width: `${crosshairSize}px`,
+          height: `${lineThickness}px`,
+          backgroundColor: crosshairColor,
+          opacity: alpha,
+          boxShadow: crosshair.outlineEnabled ? `0 0 0 ${outlineSize}px rgba(0,0,0,0.8)` : 'none',
+          top: '50%',
+          left: `calc(50% + ${gapSize}px)`,
+          transform: 'translateY(-50%)'
         }}
       />
       
-      {/* Vertical line */}
+      {/* Vertical lines */}
+      {/* Top line */}
       <div 
         className="absolute"
         style={{
-          height: `${crosshairSize * 2 + gapSize * 2}px`,
+          height: `${crosshairSize}px`,
           width: `${lineThickness}px`,
-          background: `linear-gradient(180deg, ${settings.color} 0%, ${settings.color} ${((crosshairSize - gapSize) / (crosshairSize * 2 + gapSize * 2)) * 100}%, transparent ${((crosshairSize - gapSize) / (crosshairSize * 2 + gapSize * 2)) * 100}%, transparent ${((crosshairSize + gapSize) / (crosshairSize * 2 + gapSize * 2)) * 100}%, ${settings.color} ${((crosshairSize + gapSize) / (crosshairSize * 2 + gapSize * 2)) * 100}%)`,
-          boxShadow: outlineSize > 0 ? `0 0 ${outlineSize * 2}px ${settings.color}40` : 'none',
-          top: '50%',
+          backgroundColor: crosshairColor,
+          opacity: alpha,
+          boxShadow: crosshair.outlineEnabled ? `0 0 0 ${outlineSize}px rgba(0,0,0,0.8)` : 'none',
           left: '50%',
-          transform: 'translate(-50%, -50%)'
+          bottom: `calc(50% + ${gapSize}px)`,
+          transform: 'translateX(-50%)'
+        }}
+      />
+      {/* Bottom line */}
+      <div 
+        className="absolute"
+        style={{
+          height: `${crosshairSize}px`,
+          width: `${lineThickness}px`,
+          backgroundColor: crosshairColor,
+          opacity: alpha,
+          boxShadow: crosshair.outlineEnabled ? `0 0 0 ${outlineSize}px rgba(0,0,0,0.8)` : 'none',
+          left: '50%',
+          top: `calc(50% + ${gapSize}px)`,
+          transform: 'translateX(-50%)'
         }}
       />
     </div>

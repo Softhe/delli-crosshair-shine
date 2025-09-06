@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { CrosshairPreview } from './CrosshairPreview';
 import { Download, Copy, Crosshair } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { decodeCrosshairShareCode, crosshairToConVars, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
 
 // This function converts CS2 share code to config commands
 const generateConfig = (shareCode: string): string => {
@@ -12,31 +13,23 @@ const generateConfig = (shareCode: string): string => {
     throw new Error('Invalid CS2 share code format');
   }
 
-  // In a real implementation, you would decode the share code properly
-  // For now, we'll return the basic config structure
-  return `// CS2 Crosshair Config - Generated from ${shareCode}
+  try {
+    const crosshair = decodeCrosshairShareCode(shareCode);
+    const convars = crosshairToConVars(crosshair);
+    
+    return `// CS2 Crosshair Config - Generated from ${shareCode}
 // Place this file in your CS2 config folder
 
 // Crosshair settings
-cl_crosshairalpha "255"
-cl_crosshaircolor "1"
-cl_crosshaircolor_b "0"
-cl_crosshaircolor_g "255"
-cl_crosshaircolor_r "0"
-cl_crosshairdot "0"
-cl_crosshairgap "-2"
-cl_crosshairsize "2"
-cl_crosshairstyle "4"
-cl_crosshairthickness "1"
-cl_crosshair_drawoutline "1"
-cl_crosshair_outlinethickness "1"
-
-// Additional settings
-cl_crosshair_sniper_width "1"
-cl_crosshair_t "0"
-cl_crosshairusealpha "1"
+${convars}
 
 echo "Crosshair config loaded successfully!"`;
+  } catch (error) {
+    if (error instanceof InvalidShareCode || error instanceof InvalidCrosshairShareCode) {
+      throw new Error('Invalid crosshair share code');
+    }
+    throw error;
+  }
 };
 
 export const CS2ConfigGenerator = () => {
