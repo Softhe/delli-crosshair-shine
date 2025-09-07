@@ -18,11 +18,12 @@ const generateConfig = (shareCode: string, aliasName?: string): string => {
     const convars = crosshairToConVars(crosshair);
     
     const fileName = aliasName ? `crosshair_${aliasName}.cfg` : 'crosshair.cfg';
-    const aliasCommand = aliasName ? `alias "${aliasName}" "exec ${fileName}"` : '';
+    const displayName = aliasName || 'mycrosshair';
+    const aliasCommand = `alias "${displayName}" "exec ${fileName}"`;
     
     return `// CS2 Crosshair Config - Generated from ${shareCode}
 // Place this file in your CS2 config folder
-${aliasName ? `// Add this to your autoexec.cfg: ${aliasCommand}` : ''}
+// Add this to your autoexec.cfg: ${aliasCommand}
 
 // Crosshair settings
 ${convars}
