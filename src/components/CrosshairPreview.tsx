@@ -31,16 +31,16 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   }, [shareCode]);
 
   if (error) {
-    return (
-      <div className="w-40 h-40 flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg">
-        <div className="text-destructive text-sm text-center px-4">{error}</div>
-      </div>
-    );
+  return (
+    <div className="w-48 h-48 md:w-64 md:h-64 flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg">
+      <div className="text-destructive text-sm text-center px-4">{error}</div>
+    </div>
+  );
   }
 
   if (!crosshair) {
     return (
-      <div className="w-40 h-40 flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg">
+      <div className="w-48 h-48 md:w-64 md:h-64 flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg">
         <div className="text-muted-foreground text-sm">Enter share code</div>
       </div>
     );
@@ -63,8 +63,9 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   const crosshairColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
   const alpha = crosshair.alphaEnabled ? crosshair.alpha / 255 : 1;
   
-  // Scale values for better visibility (CS2 uses different units)
-  const scale = 3;
+  // Scale values for better visibility (mobile gets extra zoom)
+  const isMobile = window.innerWidth < 768;
+  const scale = isMobile ? 5 : 4;
   const size = Math.max(1, crosshair.length * scale);
   const thickness = Math.max(1, crosshair.thickness * scale);
   const gap = Math.max(0, crosshair.gap * scale);
@@ -78,7 +79,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   };
 
   return (
-    <div className="w-40 h-40 flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg relative overflow-hidden">
+    <div className="w-48 h-48 md:w-64 md:h-64 flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg relative overflow-hidden">
       {/* Dark background for contrast */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-gray-800"></div>
       

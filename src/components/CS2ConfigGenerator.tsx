@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { decodeCrosshairShareCode, crosshairToConVars, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
 
 // This function converts CS2 share code to config commands
-const generateConfig = (shareCode: string): string => {
+const generateConfig = (shareCode: string, aliasName?: string): string => {
   if (!shareCode || !shareCode.startsWith('CSGO-')) {
     throw new Error('Invalid CS2 share code format');
   }
@@ -17,8 +17,12 @@ const generateConfig = (shareCode: string): string => {
     const crosshair = decodeCrosshairShareCode(shareCode);
     const convars = crosshairToConVars(crosshair);
     
+    const fileName = aliasName ? `crosshair_${aliasName}.cfg` : 'crosshair.cfg';
+    const aliasCommand = aliasName ? `alias "${aliasName}" "exec ${fileName}"` : '';
+    
     return `// CS2 Crosshair Config - Generated from ${shareCode}
 // Place this file in your CS2 config folder
+${aliasName ? `// Add this to your autoexec.cfg: ${aliasCommand}` : ''}
 
 // Crosshair settings
 ${convars}
@@ -35,6 +39,7 @@ echo "Crosshair config loaded successfully!"`;
 export const CS2ConfigGenerator = () => {
   const [shareCode, setShareCode] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [aliasName, setAliasName] = useState('');
   const { toast } = useToast();
 
   const handleGenerate = async () => {
@@ -50,14 +55,15 @@ export const CS2ConfigGenerator = () => {
     setIsGenerating(true);
     
     try {
-      const config = generateConfig(shareCode);
+      const config = generateConfig(shareCode, aliasName);
       
       // Create and download the config file
       const blob = new Blob([config], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'crosshair.cfg';
+      const fileName = aliasName ? `crosshair_${aliasName}.cfg` : 'crosshair.cfg';
+      a.download = fileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -84,6 +90,17 @@ export const CS2ConfigGenerator = () => {
     toast({
       title: "Copied!",
       description: "Config path copied to clipboard",
+    });
+  };
+
+  const handleCopyAlias = () => {
+    if (!aliasName.trim()) return;
+    const fileName = `crosshair_${aliasName}.cfg`;
+    const aliasCommand = `alias "${aliasName}" "exec ${fileName}"`;
+    navigator.clipboard.writeText(aliasCommand);
+    toast({
+      title: "Copied!",
+      description: "Alias command copied to clipboard",
     });
   };
 
@@ -119,6 +136,32 @@ export const CS2ConfigGenerator = () => {
             onChange={(e) => setShareCode(e.target.value)}
             className="text-lg py-6 bg-secondary/50 border-tactical-blue/30 focus:border-neon-cyan transition-all duration-300"
           />
+        </div>
+
+        <div className="space-y-4">
+          <label htmlFor="aliasName" className="text-lg font-semibold text-foreground">
+            Alias name (optional):
+          </label>
+          <div className="space-y-2">
+            <Input
+              id="aliasName"
+              type="text"
+              placeholder="e.g., bluedynsmall"
+              value={aliasName}
+              onChange={(e) => setAliasName(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
+              className="text-lg py-6 bg-secondary/50 border-tactical-blue/30 focus:border-neon-cyan transition-all duration-300"
+            />
+            {aliasName && (
+              <div className="flex items-center gap-2 bg-secondary/50 p-3 rounded-md border border-tactical-blue/20">
+                <code className="text-sm text-neon-cyan font-mono flex-1">
+                  alias "{aliasName}" "exec crosshair_{aliasName}.cfg"
+                </code>
+                <Button onClick={handleCopyAlias} variant="tactical" size="sm">
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Crosshair Preview */}
