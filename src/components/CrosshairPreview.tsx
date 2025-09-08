@@ -63,13 +63,18 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   const crosshairColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
   const alpha = crosshair.alphaEnabled ? crosshair.alpha / 255 : 1;
   
-  // Scale values based on actual CS2 proportions - more accurate scaling
+  // Scale values based on actual CS2 proportions - handle tiny crosshairs
   const isMobile = window.innerWidth < 768;
-  const baseScale = isMobile ? 8 : 6; // Adjusted for better accuracy
-  const size = Math.max(2, crosshair.length * baseScale);
-  const thickness = Math.max(1, crosshair.thickness * baseScale * 0.8); // Slightly thinner lines
-  const gap = Math.max(0, crosshair.gap * baseScale);
-  const outlineThickness = crosshair.outlineEnabled ? Math.max(1, crosshair.outline * baseScale * 0.6) : 0;
+  const baseScale = isMobile ? 4 : 3; // Much smaller base scale
+  
+  // For very small crosshairs, use minimal sizes
+  const rawSize = crosshair.length * baseScale;
+  const rawThickness = crosshair.thickness * baseScale;
+  
+  const size = rawSize < 3 ? Math.max(1, rawSize) : Math.max(2, rawSize);
+  const thickness = rawThickness < 2 ? Math.max(1, rawThickness * 0.5) : Math.max(1, rawThickness * 0.7);
+  const gap = Math.max(0, crosshair.gap * baseScale * 0.8);
+  const outlineThickness = crosshair.outlineEnabled ? Math.max(0.5, crosshair.outline * baseScale * 0.3) : 0;
 
   const lineStyle = {
     backgroundColor: crosshairColor,
