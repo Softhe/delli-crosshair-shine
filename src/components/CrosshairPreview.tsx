@@ -32,7 +32,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 
   if (error) {
     return (
-      <div className="w-64 h-64 md:w-80 md:h-80 flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg">
+      <div className="w-72 h-72 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg">
         <div className="text-destructive text-sm text-center px-4">{error}</div>
       </div>
     );
@@ -40,7 +40,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 
   if (!crosshair) {
     return (
-      <div className="w-64 h-64 md:w-80 md:h-80 flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg">
+      <div className="w-72 h-72 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg">
         <div className="text-muted-foreground text-sm">Enter share code</div>
       </div>
     );
@@ -72,11 +72,10 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
     shareCode
   });
   
-  // Fixed scaling based on actual game proportions
-  const isMobile = window.innerWidth < 768;
+  // Responsive scaling based on screen size
+  const screenWidth = window.innerWidth;
+  const scale = screenWidth < 768 ? 6 : screenWidth < 1024 ? 7 : screenWidth < 1280 ? 8 : 9;
   
-  // Use consistent scaling that matches CS2 better
-  const scale = isMobile ? 6 : 5;
   const size = crosshair.length * scale;
   const thickness = Math.max(1, crosshair.thickness * scale);
   const gap = crosshair.gap * scale;
@@ -94,7 +93,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   };
 
   return (
-    <div className="w-64 h-64 md:w-80 md:h-80 flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg relative overflow-hidden">
+    <div className="w-72 h-72 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg relative overflow-hidden">
       {/* Game-like background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-600"></div>
       {/* Grid pattern like CS2 */}
