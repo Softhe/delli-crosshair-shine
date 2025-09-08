@@ -63,18 +63,21 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   const crosshairColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
   const alpha = crosshair.alphaEnabled ? crosshair.alpha / 255 : 1;
   
-  // Scale values based on actual CS2 proportions - handle tiny crosshairs
+  // Dynamic scaling based on crosshair size - handle both tiny and normal crosshairs
   const isMobile = window.innerWidth < 768;
-  const baseScale = isMobile ? 4 : 3; // Much smaller base scale
   
-  // For very small crosshairs, use minimal sizes
-  const rawSize = crosshair.length * baseScale;
-  const rawThickness = crosshair.thickness * baseScale;
+  // Determine if this is a tiny crosshair (very small length/thickness)
+  const isTinyCrosshair = crosshair.length <= 2 && crosshair.thickness <= 2;
   
-  const size = rawSize < 3 ? Math.max(1, rawSize) : Math.max(2, rawSize);
-  const thickness = rawThickness < 2 ? Math.max(1, rawThickness * 0.5) : Math.max(1, rawThickness * 0.7);
-  const gap = Math.max(0, crosshair.gap * baseScale * 0.8);
-  const outlineThickness = crosshair.outlineEnabled ? Math.max(0.5, crosshair.outline * baseScale * 0.3) : 0;
+  // Use different scaling for tiny vs normal crosshairs
+  const baseScale = isTinyCrosshair 
+    ? (isMobile ? 4 : 3)  // Small scale for tiny crosshairs
+    : (isMobile ? 8 : 6); // Larger scale for normal crosshairs
+  
+  const size = Math.max(isTinyCrosshair ? 1 : 3, crosshair.length * baseScale);
+  const thickness = Math.max(1, crosshair.thickness * baseScale * (isTinyCrosshair ? 0.5 : 0.8));
+  const gap = Math.max(0, crosshair.gap * baseScale);
+  const outlineThickness = crosshair.outlineEnabled ? Math.max(0.5, crosshair.outline * baseScale * 0.4) : 0;
 
   const lineStyle = {
     backgroundColor: crosshairColor,
