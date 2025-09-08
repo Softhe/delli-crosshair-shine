@@ -46,16 +46,16 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
     );
   }
 
-  // CS2 color mapping
+  // CS2 color mapping - accurate colors based on game
   const getCS2Color = (colorIndex: number, red: number, green: number, blue: number) => {
     switch (colorIndex) {
-      case 0: return { r: 250, g: 50, b: 50 };    // Red
-      case 1: return { r: 50, g: 250, b: 50 };    // Green
-      case 2: return { r: 255, g: 255, b: 50 };   // Yellow
-      case 3: return { r: 50, g: 50, b: 250 };    // Blue
-      case 4: return { r: 50, g: 255, b: 255 };   // Cyan
+      case 0: return { r: 255, g: 0, b: 0 };      // Red
+      case 1: return { r: 0, g: 255, b: 0 };      // Green  
+      case 2: return { r: 255, g: 255, b: 0 };    // Yellow
+      case 3: return { r: 0, g: 0, b: 255 };      // Blue
+      case 4: return { r: 0, g: 255, b: 255 };    // Cyan
       case 5: return { r: red, g: green, b: blue }; // Custom
-      default: return { r: 50, g: 255, b: 255 };  // Default to cyan
+      default: return { r: 0, g: 255, b: 255 };   // Default to cyan
     }
   };
 
@@ -63,10 +63,10 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   const crosshairColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
   const alpha = crosshair.alphaEnabled ? crosshair.alpha / 255 : 1;
   
-  // Scale values for better visibility (mobile gets extra zoom, 75% larger)
+  // Scale values based on actual CS2 proportions
   const isMobile = window.innerWidth < 768;
-  const baseScale = isMobile ? 8.75 : 7; // 75% increase from original (5->8.75, 4->7)
-  const size = Math.max(1, crosshair.length * baseScale);
+  const baseScale = isMobile ? 12 : 10; // Larger scale for better visibility
+  const size = Math.max(2, crosshair.length * baseScale);
   const thickness = Math.max(1, crosshair.thickness * baseScale);
   const gap = Math.max(0, crosshair.gap * baseScale);
   const outlineThickness = crosshair.outlineEnabled ? Math.max(1, crosshair.outline * baseScale) : 0;
@@ -74,14 +74,20 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   const lineStyle = {
     backgroundColor: crosshairColor,
     opacity: alpha,
-    outline: outlineThickness > 0 ? `${outlineThickness}px solid rgba(0, 0, 0, 0.8)` : 'none',
-    outlineOffset: '0px'
+    outline: outlineThickness > 0 ? `${outlineThickness}px solid rgba(0, 0, 0, 0.9)` : 'none',
+    outlineOffset: '0px',
+    boxShadow: outlineThickness > 0 ? `0 0 0 ${outlineThickness}px rgba(0, 0, 0, 0.9)` : 'none'
   };
 
   return (
     <div className="w-64 h-64 md:w-80 md:h-80 flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg relative overflow-hidden">
-      {/* Dark background for contrast */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-gray-800"></div>
+      {/* Game-like background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-600"></div>
+      {/* Grid pattern like CS2 */}
+      <div className="absolute inset-0 opacity-10" style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)`,
+        backgroundSize: '20px 20px'
+      }}></div>
       
       {/* Crosshair container */}
       <div className="relative w-full h-full flex items-center justify-center">
@@ -92,8 +98,8 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
             className="absolute z-20"
             style={{
               ...lineStyle,
-              width: `${Math.max(2, thickness)}px`,
-              height: `${Math.max(2, thickness)}px`,
+              width: `${Math.max(3, thickness * 1.2)}px`,
+              height: `${Math.max(3, thickness * 1.2)}px`,
               borderRadius: '50%',
               left: '50%',
               top: '50%',
