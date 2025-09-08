@@ -63,20 +63,21 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   const crosshairColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
   const alpha = crosshair.alphaEnabled ? crosshair.alpha / 255 : 1;
   
-  // Scale values based on actual CS2 proportions
+  // Scale values based on actual CS2 proportions - more accurate scaling
   const isMobile = window.innerWidth < 768;
-  const baseScale = isMobile ? 12 : 10; // Larger scale for better visibility
+  const baseScale = isMobile ? 8 : 6; // Adjusted for better accuracy
   const size = Math.max(2, crosshair.length * baseScale);
-  const thickness = Math.max(1, crosshair.thickness * baseScale);
+  const thickness = Math.max(1, crosshair.thickness * baseScale * 0.8); // Slightly thinner lines
   const gap = Math.max(0, crosshair.gap * baseScale);
-  const outlineThickness = crosshair.outlineEnabled ? Math.max(1, crosshair.outline * baseScale) : 0;
+  const outlineThickness = crosshair.outlineEnabled ? Math.max(1, crosshair.outline * baseScale * 0.6) : 0;
 
   const lineStyle = {
     backgroundColor: crosshairColor,
     opacity: alpha,
-    outline: outlineThickness > 0 ? `${outlineThickness}px solid rgba(0, 0, 0, 0.9)` : 'none',
+    outline: outlineThickness > 0 ? `${Math.max(1, outlineThickness)}px solid rgba(0, 0, 0, 0.95)` : 'none',
     outlineOffset: '0px',
-    boxShadow: outlineThickness > 0 ? `0 0 0 ${outlineThickness}px rgba(0, 0, 0, 0.9)` : 'none'
+    position: 'absolute' as const,
+    zIndex: 10
   };
 
   return (
@@ -95,15 +96,15 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
         {/* Center dot */}
         {crosshair.centerDotEnabled && (
           <div 
-            className="absolute z-20"
             style={{
               ...lineStyle,
-              width: `${Math.max(3, thickness * 1.2)}px`,
-              height: `${Math.max(3, thickness * 1.2)}px`,
+              width: `${Math.max(2, thickness * 0.8)}px`,
+              height: `${Math.max(2, thickness * 0.8)}px`,
               borderRadius: '50%',
               left: '50%',
               top: '50%',
-              transform: 'translate(-50%, -50%)'
+              transform: 'translate(-50%, -50%)',
+              zIndex: 20
             }}
           />
         )}
@@ -113,7 +114,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
           <>
             {/* Left line */}
             <div 
-              className="absolute z-10"
               style={{
                 ...lineStyle,
                 width: `${size}px`,
@@ -125,7 +125,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
             />
             {/* Right line */}
             <div 
-              className="absolute z-10"
               style={{
                 ...lineStyle,
                 width: `${size}px`,
@@ -143,7 +142,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
           <>
             {/* Top line */}
             <div 
-              className="absolute z-10"
               style={{
                 ...lineStyle,
                 width: `${thickness}px`,
@@ -155,7 +153,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
             />
             {/* Bottom line */}
             <div 
-              className="absolute z-10"
               style={{
                 ...lineStyle,
                 width: `${thickness}px`,
