@@ -130,7 +130,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 ...lineStyle,
                 width: `${size}px`,
                 height: `${thickness}px`,
-                right: `calc(50% + ${Math.abs(gap) * 0.7}px)`,
+                right: `50%`,
                 top: '50%',
                 transform: 'translateY(-50%)'
               }}
@@ -141,7 +141,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 ...lineStyle,
                 width: `${size}px`,
                 height: `${thickness}px`,
-                left: `calc(50% + ${Math.abs(gap) * 0.7}px)`,
+                left: `50%`,
                 top: '50%',
                 transform: 'translateY(-50%)'
               }}
@@ -159,7 +159,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 width: `${thickness}px`,
                 height: `${size}px`,
                 left: '50%',
-                bottom: `calc(50% + ${Math.abs(gap) * 0.7}px)`,
+                bottom: `50%`,
                 transform: 'translateX(-50%)'
               }}
             />
@@ -170,7 +170,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 width: `${thickness}px`,
                 height: `${size}px`,
                 left: '50%',
-                top: `calc(50% + ${Math.abs(gap) * 0.7}px)`,
+                top: `50%`,
                 transform: 'translateX(-50%)'
               }}
             />
