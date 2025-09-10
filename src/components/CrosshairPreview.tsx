@@ -130,7 +130,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 ...lineStyle,
                 width: `${size}px`,
                 height: `${thickness}px`,
-                right: `calc(50% + ${gap / 2}px)`,
+                right: `calc(50% - ${gap / 2}px)`,
                 top: '50%',
                 transform: 'translateY(-50%)'
               }}
@@ -159,7 +159,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 width: `${thickness}px`,
                 height: `${size}px`,
                 left: '50%',
-                bottom: `calc(50% + ${gap / 2}px)`,
+                bottom: `calc(50% - ${gap / 2}px)`,
                 transform: 'translateX(-50%)'
               }}
             />
