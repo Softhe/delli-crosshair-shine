@@ -3,20 +3,21 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  plugins: [
-    [react()],
-    base: "/",
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+export default defineConfig(({ command, mode }) => {
+  const isDev = mode === "development";
+  const isServe = command === "serve";
+
+  return {
+    base: isServe ? "/" : "/delli-crosshair-shine/",
+    plugins: [
+      react(),
+      // Only enable the tagger in development (optional)
+      isDev && componentTagger(),
+    ].filter(Boolean),
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
     },
-  },
- if (command !== 'serve') {
-  config.base = '/delli-crosshair-shine/'
-  }
-}));
+  };
+});
