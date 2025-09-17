@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    base: "/delli-crosshair-shine/",
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
