@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react(),
+    [react()],
     base: "/delli-crosshair-shine/",
     mode === 'development' &&
     componentTagger(),
