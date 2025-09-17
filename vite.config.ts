@@ -20,4 +20,7 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+ if (command !== 'serve') {
+  config.base = '/delli-crosshair-shine/'
+  }
 }));
