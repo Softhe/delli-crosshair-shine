@@ -8,7 +8,7 @@ export default defineConfig(({ command, mode }) => {
   const isServe = command === "serve";
 
   return {
-    base: isServe ? "/" : "/delli-crosshair-shine/",
+    base: "/",
     plugins: [react(), isDev && componentTagger()].filter(Boolean),
     resolve: {
       alias: {
