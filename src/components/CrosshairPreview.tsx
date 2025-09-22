@@ -81,8 +81,8 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   
   // Handle negative gaps (overlapping crosshair lines) and ensure visibility
   const rawSize = crosshair.length * baseScale;
-  const size = Math.max(50, rawSize); // Ensure minimum 50px length
-  const thickness = Math.max(4, crosshair.thickness * baseScale);
+  const size = Math.max(80, rawSize); // Increased to 80px for better visibility
+  const thickness = Math.max(6, crosshair.thickness * baseScale); // Increased to 6px
   
   // Handle negative gap: negative means lines overlap, positive means gap between lines
   let gap = crosshair.gap * baseScale;
@@ -153,6 +153,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
             <div 
               style={{
                 ...lineStyle,
+                backgroundColor: 'red', // Temporary debug color
                 width: `${size}px`,
                 height: `${thickness}px`,
                 right: hasNegativeGap ? `calc(50% - ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
@@ -164,6 +165,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
             <div 
               style={{
                 ...lineStyle,
+                backgroundColor: 'red', // Temporary debug color
                 width: `${size}px`,
                 height: `${thickness}px`,
                 left: hasNegativeGap ? `calc(50% - ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
@@ -181,6 +183,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
             <div 
               style={{
                 ...lineStyle,
+                backgroundColor: 'blue', // Temporary debug color
                 width: `${thickness}px`,
                 height: `${size}px`,
                 left: '50%',
@@ -192,6 +195,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
             <div 
               style={{
                 ...lineStyle,
+                backgroundColor: 'blue', // Temporary debug color
                 width: `${thickness}px`,
                 height: `${size}px`,
                 left: '50%',
