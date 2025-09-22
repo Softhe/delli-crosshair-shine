@@ -72,16 +72,17 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
     shareCode
   });
   
-  // Responsive scaling based on screen size
+  // Responsive scaling based on screen size - increased base scale for better visibility
   const screenWidth = window.innerWidth;
-  const scale = screenWidth < 768 ? 6 : screenWidth < 1024 ? 7 : screenWidth < 1280 ? 8 : 9;
+  const baseScale = screenWidth < 768 ? 12 : screenWidth < 1024 ? 14 : screenWidth < 1280 ? 16 : 18;
   
-  const size = crosshair.length * scale;
-  const thickness = Math.max(1, crosshair.thickness * scale);
-  const gap = crosshair.gap * scale;
-  const outlineThickness = crosshair.outlineEnabled ? Math.max(1, crosshair.outline * scale) : 0;
+  // Ensure minimum visibility with proper scaling
+  const size = Math.max(20, crosshair.length * baseScale);
+  const thickness = Math.max(2, crosshair.thickness * baseScale);
+  const gap = crosshair.gap * baseScale;
+  const outlineThickness = crosshair.outlineEnabled ? Math.max(1, crosshair.outline * baseScale) : 0;
   
-  console.log('Calculated values:', { size, thickness, gap, outlineThickness });
+  console.log('Calculated values:', { size, thickness, gap, outlineThickness, baseScale });
 
   const lineStyle = {
     backgroundColor: crosshairColor,
@@ -130,9 +131,10 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 ...lineStyle,
                 width: `${size}px`,
                 height: `${thickness}px`,
-                right: `calc(50% + ${Math.max(0, gap)}px)`,
+                right: `calc(50% + ${Math.max(0, gap / 2)}px)`,
                 top: '50%',
-                transform: 'translateY(-50%)'
+                transform: 'translateY(-50%)',
+                border: '1px solid red' // Debug border - remove later
               }}
             />
             {/* Right line */}
@@ -141,9 +143,10 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 ...lineStyle,
                 width: `${size}px`,
                 height: `${thickness}px`,
-                left: `calc(50% + ${Math.max(0, gap)}px)`,
+                left: `calc(50% + ${Math.max(0, gap / 2)}px)`,
                 top: '50%',
-                transform: 'translateY(-50%)'
+                transform: 'translateY(-50%)',
+                border: '1px solid red' // Debug border - remove later
               }}
             />
           </>
@@ -159,8 +162,9 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 width: `${thickness}px`,
                 height: `${size}px`,
                 left: '50%',
-                bottom: `calc(50% + ${Math.max(0, gap)}px)`,
-                transform: 'translateX(-50%)'
+                bottom: `calc(50% + ${Math.max(0, gap / 2)}px)`,
+                transform: 'translateX(-50%)',
+                border: '1px solid red' // Debug border - remove later
               }}
             />
             {/* Bottom line */}
@@ -170,8 +174,9 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 width: `${thickness}px`,
                 height: `${size}px`,
                 left: '50%',
-                top: `calc(50% + ${Math.max(0, gap)}px)`,
-                transform: 'translateX(-50%)'
+                top: `calc(50% + ${Math.max(0, gap / 2)}px)`,
+                transform: 'translateX(-50%)',
+                border: '1px solid red' // Debug border - remove later
               }}
             />
           </>
