@@ -77,7 +77,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   
   // Responsive scaling based on screen size - much larger scale for CS2 accuracy
   const screenWidth = window.innerWidth;
-  const baseScale = screenWidth < 768 ? 20 : screenWidth < 1024 ? 25 : screenWidth < 1280 ? 30 : 35;
+  const baseScale = screenWidth < 768 ? 40 : screenWidth < 1024 ? 50 : screenWidth < 1280 ? 60 : 70;
   
   // Handle negative gaps (overlapping crosshair lines) and ensure visibility
   const rawSize = crosshair.length * baseScale;
