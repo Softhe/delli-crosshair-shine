@@ -202,11 +202,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
           </>
         )}
       </div>
-      
-      {/* Debug info overlay (remove in production) */}
-      <div className="absolute top-1 right-1 text-xs text-white/50 font-mono">
-        {crosshair.style}
-      </div>
     </div>
   );
 };
