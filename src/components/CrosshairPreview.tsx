@@ -153,7 +153,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
             <div 
               style={{
                 ...lineStyle,
-                backgroundColor: 'red', // Temporary debug color
                 width: `${size}px`,
                 height: `${thickness}px`,
                 right: hasNegativeGap ? `calc(50% - ${size/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
@@ -165,7 +164,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
             <div 
               style={{
                 ...lineStyle,
-                backgroundColor: 'red', // Temporary debug color
                 width: `${size}px`,
                 height: `${thickness}px`,
                 left: hasNegativeGap ? `calc(50% - ${size/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
@@ -183,7 +181,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
             <div 
               style={{
                 ...lineStyle,
-                backgroundColor: 'blue', // Temporary debug color
                 width: `${thickness}px`,
                 height: `${size}px`,
                 left: '50%',
@@ -195,7 +192,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
             <div 
               style={{
                 ...lineStyle,
-                backgroundColor: 'blue', // Temporary debug color
                 width: `${thickness}px`,
                 height: `${size}px`,
                 left: '50%',
