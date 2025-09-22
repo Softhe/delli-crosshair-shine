@@ -9,11 +9,7 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     base: isServe ? "/" : "/delli-crosshair-shine/",
-    plugins: [
-      react(),
-      // Only enable the tagger in development (optional)
-      isDev && componentTagger(),
-    ].filter(Boolean),
+    plugins: [react(), isDev && componentTagger()].filter(Boolean),
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
