@@ -75,24 +75,24 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
     style: crosshair.style
   });
   
-  // Responsive scaling based on screen size - increased base scale for better visibility
+  // Responsive scaling based on screen size - much larger scale for CS2 accuracy
   const screenWidth = window.innerWidth;
-  const baseScale = screenWidth < 768 ? 12 : screenWidth < 1024 ? 14 : screenWidth < 1280 ? 16 : 18;
+  const baseScale = screenWidth < 768 ? 40 : screenWidth < 1024 ? 50 : screenWidth < 1280 ? 60 : 70;
   
   // Handle negative gaps (overlapping crosshair lines) and ensure visibility
   const rawSize = crosshair.length * baseScale;
-  const size = Math.max(80, rawSize); // Increased to 80px for better visibility
-  const thickness = Math.max(6, crosshair.thickness * baseScale); // Increased to 6px
+  const size = Math.max(120, rawSize); // Much larger minimum size
+  const thickness = Math.max(8, crosshair.thickness * baseScale); // Thicker lines
   
-  // Handle negative gap: negative means lines overlap, positive means gap between lines
+  // Handle negative gap: negative means lines overlap significantly
   let gap = crosshair.gap * baseScale;
   const hasNegativeGap = crosshair.gap < 0;
   
-  // For negative gaps, lines should overlap in the center
-  // For positive gaps, lines should have space between them
+  // For negative gaps in CS2, the lines overlap substantially in the center
+  // The actual overlap should be significant to match CS2 behavior
   const actualGap = hasNegativeGap ? Math.abs(gap) : Math.max(0, gap);
   
-  const outlineThickness = crosshair.outlineEnabled ? Math.max(1, crosshair.outline * baseScale) : 0;
+  const outlineThickness = crosshair.outlineEnabled ? Math.max(2, crosshair.outline * baseScale) : 0;
   
   console.log('Calculated values:', { 
     rawSize, 
@@ -156,7 +156,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 backgroundColor: 'red', // Temporary debug color
                 width: `${size}px`,
                 height: `${thickness}px`,
-                right: hasNegativeGap ? `calc(50% - ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
+                right: hasNegativeGap ? `calc(50% - ${size/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
                 top: '50%',
                 transform: 'translateY(-50%)'
               }}
@@ -168,7 +168,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 backgroundColor: 'red', // Temporary debug color
                 width: `${size}px`,
                 height: `${thickness}px`,
-                left: hasNegativeGap ? `calc(50% - ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
+                left: hasNegativeGap ? `calc(50% - ${size/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
                 top: '50%',
                 transform: 'translateY(-50%)'
               }}
@@ -187,7 +187,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 width: `${thickness}px`,
                 height: `${size}px`,
                 left: '50%',
-                bottom: hasNegativeGap ? `calc(50% - ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
+                bottom: hasNegativeGap ? `calc(50% - ${size/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
                 transform: 'translateX(-50%)'
               }}
             />
@@ -199,7 +199,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 width: `${thickness}px`,
                 height: `${size}px`,
                 left: '50%',
-                top: hasNegativeGap ? `calc(50% - ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
+                top: hasNegativeGap ? `calc(50% - ${size/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
                 transform: 'translateX(-50%)'
               }}
             />
