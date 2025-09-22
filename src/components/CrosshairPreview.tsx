@@ -69,19 +69,25 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
     thickness: crosshair.thickness,
     gap: crosshair.gap,
     outline: crosshair.outline,
-    shareCode
+    shareCode,
+    centerDotEnabled: crosshair.centerDotEnabled,
+    color: crosshair.color,
+    style: crosshair.style
   });
   
   // Responsive scaling based on screen size - increased base scale for better visibility
   const screenWidth = window.innerWidth;
   const baseScale = screenWidth < 768 ? 12 : screenWidth < 1024 ? 14 : screenWidth < 1280 ? 16 : 18;
   
+  // Force visible crosshair for testing - remove this later
+  const forceVisible = true;
+  
   // Ensure minimum visibility with proper scaling
   // Handle edge case where crosshair.length might be 0 or very small
   const rawSize = crosshair.length * baseScale;
-  const size = rawSize > 0 ? Math.max(30, rawSize) : 40; // Fallback to 40px if length is 0
-  const thickness = Math.max(3, crosshair.thickness * baseScale);
-  const gap = crosshair.gap * baseScale;
+  const size = forceVisible ? Math.max(50, rawSize) : (rawSize > 0 ? Math.max(30, rawSize) : 40);
+  const thickness = forceVisible ? Math.max(4, crosshair.thickness * baseScale) : Math.max(3, crosshair.thickness * baseScale);
+  const gap = Math.max(8, crosshair.gap * baseScale); // Ensure minimum gap
   const outlineThickness = crosshair.outlineEnabled ? Math.max(1, crosshair.outline * baseScale) : 0;
   
   console.log('Calculated values:', { 
@@ -92,13 +98,15 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
     outlineThickness, 
     baseScale,
     crosshairLength: crosshair.length,
-    crosshairThickness: crosshair.thickness 
+    crosshairThickness: crosshair.thickness,
+    crosshairColor,
+    alpha
   });
 
   const lineStyle = {
     backgroundColor: crosshairColor,
     opacity: alpha,
-    border: outlineThickness > 0 ? `${Math.max(1, outlineThickness)}px solid rgba(0, 0, 0, 0.95)` : 'none',
+    boxShadow: outlineThickness > 0 ? `0 0 0 ${outlineThickness}px rgba(0, 0, 0, 0.95)` : 'none',
     position: 'absolute' as const,
     zIndex: 10
   };
