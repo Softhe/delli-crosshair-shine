@@ -75,14 +75,14 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
     style: crosshair.style
   });
   
-  // Responsive scaling based on screen size - much larger scale for CS2 accuracy
+  // Responsive scaling based on screen size - more accurate CS2 proportions
   const screenWidth = window.innerWidth;
-  const baseScale = screenWidth < 768 ? 40 : screenWidth < 1024 ? 50 : screenWidth < 1280 ? 60 : 70;
+  const baseScale = screenWidth < 768 ? 12 : screenWidth < 1024 ? 15 : screenWidth < 1280 ? 18 : 20;
   
   // Handle negative gaps (overlapping crosshair lines) and ensure visibility
   const rawSize = crosshair.length * baseScale;
-  const size = Math.max(120, rawSize); // Much larger minimum size
-  const thickness = Math.max(8, crosshair.thickness * baseScale); // Thicker lines
+  const size = Math.max(20, rawSize); // More realistic minimum size
+  const thickness = Math.max(2, crosshair.thickness * baseScale); // More accurate thickness
   
   // Handle negative gap: negative means lines overlap significantly
   let gap = crosshair.gap * baseScale;
@@ -92,7 +92,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   // The actual overlap should be significant to match CS2 behavior
   const actualGap = hasNegativeGap ? Math.abs(gap) : Math.max(0, gap);
   
-  const outlineThickness = crosshair.outlineEnabled ? Math.max(2, crosshair.outline * baseScale) : 0;
+  const outlineThickness = crosshair.outlineEnabled ? Math.max(1, crosshair.outline * baseScale * 0.5) : 0;
   
   console.log('Calculated values:', { 
     rawSize, 
