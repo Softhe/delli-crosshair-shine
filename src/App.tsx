@@ -13,7 +13,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter basename="/delli-crosshair-shine/">
+      <BrowserRouter basename={import.meta.env.DEV ? "/" : "/delli-crosshair-shine/"}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="*" element={<NotFound />} />
