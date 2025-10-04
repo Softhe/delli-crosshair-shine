@@ -165,11 +165,39 @@ export const CS2ConfigGenerator = () => {
           </div>
         </div>
 
-        {/* Crosshair Preview */}
+        {/* Crosshair Preview with enhanced information */}
         {shareCode && (
           <div className="flex flex-col items-center space-y-4">
             <h3 className="text-lg font-semibold text-neon-cyan">Crosshair Preview</h3>
             <CrosshairPreview shareCode={shareCode} />
+            {(() => {
+              try {
+                const crosshair = decodeCrosshairShareCode(shareCode);
+                return (
+                  <div className="w-full max-w-md bg-secondary/30 border border-tactical-blue/20 rounded-lg p-4 text-sm">
+                    <h4 className="font-semibold text-neon-cyan mb-2">Crosshair Settings</h4>
+                    <div className="grid grid-cols-2 gap-2 text-muted-foreground">
+                      <div>Style: <span className="text-foreground">{crosshair.style}</span></div>
+                      <div>Size: <span className="text-foreground">{crosshair.length}</span></div>
+                      <div>Thickness: <span className="text-foreground">{crosshair.thickness}</span></div>
+                      <div>Gap: <span className="text-foreground">{crosshair.gap}</span></div>
+                      <div>Outline: <span className="text-foreground">{crosshair.outlineEnabled ? crosshair.outline : 'Off'}</span></div>
+                      <div>Center Dot: <span className="text-foreground">{crosshair.centerDotEnabled ? 'On' : 'Off'}</span></div>
+                      <div>Color: <span className="text-foreground">
+                        {crosshair.color === 0 ? 'Red' : 
+                         crosshair.color === 1 ? 'Green' : 
+                         crosshair.color === 2 ? 'Yellow' : 
+                         crosshair.color === 3 ? 'Blue' : 
+                         crosshair.color === 4 ? 'Cyan' : 'Custom'}
+                      </span></div>
+                      <div>Alpha: <span className="text-foreground">{crosshair.alphaEnabled ? crosshair.alpha : 'Max'}</span></div>
+                    </div>
+                  </div>
+                );
+              } catch {
+                return null;
+              }
+            })()}
           </div>
         )}
 
