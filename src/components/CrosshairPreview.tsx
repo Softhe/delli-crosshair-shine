@@ -209,16 +209,17 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
     alpha
   });
 
-  // Enhanced line styling with better outline support
+  // Enhanced line styling with proper outline support (reverted)
   const lineStyle = {
     backgroundColor: crosshairColor,
     opacity: alpha,
-    filter: outlineThickness > 0 ? 
-      `drop-shadow(0 0 ${outlineThickness}px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 ${outlineThickness * 0.5}px rgba(0, 0, 0, 0.7))` : 
-      'none',
     position: 'absolute' as const,
     zIndex: 10,
-    borderRadius: '0.5px' // Slight rounding for better visual quality
+    borderRadius: '0.5px',
+    // Proper outline implementation
+    ...(outlineThickness > 0 && {
+      boxShadow: `0 0 0 ${outlineThickness}px rgba(0, 0, 0, 0.8)`
+    })
   };
 
   return (
@@ -300,7 +301,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
         {/* Crosshair container */}
         <div className="relative w-full h-full flex items-center justify-center">
           
-          {/* Center dot with improved scaling */}
+          {/* Center dot with reverted outline */}
           {crosshair.centerDotEnabled && (
             <div 
               style={{
@@ -311,10 +312,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                 left: '50%',
                 top: '50%',
                 transform: 'translate(-50%, -50%)',
-                zIndex: 20,
-                filter: outlineThickness > 0 ? 
-                  `drop-shadow(0 0 ${outlineThickness * 0.8}px rgba(0, 0, 0, 0.9))` : 
-                  'none'
+                zIndex: 20
               }}
             />
           )}
