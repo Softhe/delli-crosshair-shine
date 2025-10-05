@@ -250,130 +250,131 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
         
         <Button
           variant="tactical"
-          size="sm"
-          onClick={() => setZoom(1)}
-        >
-          <RotateCcw className="w-3 h-3" />
-        </Button>
-        
-        <div className="flex items-center gap-1">
-          <Palette className="w-3 h-3 text-muted-foreground" />
-          <select
-            value={backgroundType}
-            onChange={(e) => setBackgroundType(e.target.value as BackgroundType)}
-            className="text-xs bg-secondary/50 border border-tactical-blue/30 rounded px-2 py-1 text-foreground"
+            size="sm"
+            onClick={() => setZoom(1)}
           >
-            <option value="dust2">Dust2</option>
-            <option value="mirage">Mirage</option>
-            <option value="inferno">Inferno</option>
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-          </select>
+            <RotateCcw className="w-3 h-3" />
+          </Button>
+          
+          <div className="flex items-center gap-1">
+            <Palette className="w-3 h-3 text-muted-foreground" />
+            <select
+              value={backgroundType}
+              onChange={(e) => setBackgroundType(e.target.value as BackgroundType)}
+              className="text-xs bg-secondary/50 border border-tactical-blue/30 rounded px-2 py-1 text-foreground"
+            >
+              <option value="dust2">Dust2</option>
+              <option value="mirage">Mirage</option>
+              <option value="inferno">Inferno</option>
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
         </div>
-      </div>
 
-      {/* Preview Container */}
-      <div className="w-72 h-72 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg relative overflow-hidden">
-        {/* Dynamic background based on selection */}
-        <div className="absolute inset-0" style={{ background: backgroundStyle.background }}></div>
-        
-        {/* Background overlay for texture */}
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: backgroundStyle.overlay
-        }}></div>
-        
-        {/* Subtle noise texture for realism */}
-        <div className="absolute inset-0 opacity-5" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-          backgroundSize: '180px 180px'
-        }}></div>
-        
-        {/* Dynamic lighting effect */}
-        <div className="absolute inset-0" style={{
-          background: backgroundType === 'light' ? 
-            `linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(255, 255, 255, 0.1) 100%)` :
-            `
-              radial-gradient(ellipse at 50% 20%, rgba(255, 248, 220, 0.08) 0%, transparent 60%),
-              linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.1) 100%)
-            `
-        }}></div>
-        
-        {/* Crosshair container */}
-        <div className="relative w-full h-full flex items-center justify-center">
+        {/* Preview Container */}
+        <div className="w-72 h-72 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg relative overflow-hidden">
+          {/* Dynamic background based on selection */}
+          <div className="absolute inset-0" style={{ background: backgroundStyle.background }}></div>
           
-          {/* Center dot with reverted outline */}
-          {crosshair.centerDotEnabled && (
-            <div 
-              style={{
-                ...lineStyle,
-                width: `${Math.max(1, thickness * 0.7)}px`,
-                height: `${Math.max(1, thickness * 0.7)}px`,
-                borderRadius: '50%',
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 20
-              }}
-            />
-          )}
+          {/* Background overlay for texture */}
+          <div className="absolute inset-0 opacity-20" style={{
+            backgroundImage: backgroundStyle.overlay
+          }}></div>
           
-          {/* Horizontal lines with improved positioning */}
-          {length > 0 && (
-            <>
-              {/* Left line */}
+          {/* Subtle noise texture for realism */}
+          <div className="absolute inset-0 opacity-5" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+            backgroundSize: '180px 180px'
+          }}></div>
+          
+          {/* Dynamic lighting effect */}
+          <div className="absolute inset-0" style={{
+            background: backgroundType === 'light' ? 
+              `linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(255, 255, 255, 0.1) 100%)` :
+              `
+                radial-gradient(ellipse at 50% 20%, rgba(255, 248, 220, 0.08) 0%, transparent 60%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.1) 100%)
+              `
+          }}></div>
+          
+          {/* Crosshair container */}
+          <div className="relative w-full h-full flex items-center justify-center">
+            
+            {/* Center dot with reverted outline */}
+            {crosshair.centerDotEnabled && (
               <div 
                 style={{
                   ...lineStyle,
-                  width: `${length}px`,
-                  height: `${thickness}px`,
-                  right: hasNegativeGap ? `calc(50% - ${length/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
-                  top: '50%',
-                  transform: 'translateY(-50%)'
-                }}
-              />
-              {/* Right line */}
-              <div 
-                style={{
-                  ...lineStyle,
-                  width: `${length}px`,
-                  height: `${thickness}px`,
-                  left: hasNegativeGap ? `calc(50% - ${length/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
-                  top: '50%',
-                  transform: 'translateY(-50%)'
-                }}
-              />
-            </>
-          )}
-          
-          {/* Vertical lines with improved positioning */}
-          {length > 0 && (
-            <>
-              {/* Top line */}
-              <div 
-                style={{
-                  ...lineStyle,
-                  width: `${thickness}px`,
-                  height: `${length}px`,
+                  width: `${Math.max(1, thickness * 0.7)}px`,
+                  height: `${Math.max(1, thickness * 0.7)}px`,
+                  borderRadius: '50%',
                   left: '50%',
-                  bottom: hasNegativeGap ? `calc(50% - ${length/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
-                  transform: 'translateX(-50%)'
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: 20
                 }}
               />
-              {/* Bottom line */}
-              <div 
-                style={{
-                  ...lineStyle,
-                  width: `${thickness}px`,
-                  height: `${length}px`,
-                  left: '50%',
-                  top: hasNegativeGap ? `calc(50% - ${length/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
-                  transform: 'translateX(-50%)'
-                }}
-              />
-            </>
-          )}
+            )}
+            
+            {/* Horizontal lines with improved positioning */}
+            {length > 0 && (
+              <>
+                {/* Left line */}
+                <div 
+                  style={{
+                    ...lineStyle,
+                    width: `${length}px`,
+                    height: `${thickness}px`,
+                    right: hasNegativeGap ? `calc(50% - ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
+                    top: '50%',
+                    transform: 'translateY(-50%)'
+                  }}
+                />
+                {/* Right line */}
+                <div 
+                  style={{
+                    ...lineStyle,
+                    width: `${length}px`,
+                    height: `${thickness}px`,
+                    left: hasNegativeGap ? `calc(50% - ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
+                    top: '50%',
+                    transform: 'translateY(-50%)'
+                  }}
+                />
+              </>
+            )}
+            
+            {/* Vertical lines with improved positioning */}
+            {length > 0 && (
+              <>
+                {/* Top line */}
+                <div 
+                  style={{
+                    ...lineStyle,
+                    width: `${thickness}px`,
+                    height: `${length}px`,
+                    left: '50%',
+                    bottom: hasNegativeGap ? `calc(50% - ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
+                    transform: 'translateX(-50%)'
+                  }}
+                />
+                {/* Bottom line */}
+                <div 
+                  style={{
+                    ...lineStyle,
+                    width: `${thickness}px`,
+                    height: `${length}px`,
+                    left: '50%',
+                    top: hasNegativeGap ? `calc(50% - ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
+                    transform: 'translateX(-50%)'
+                  }}
+                />
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
+  
