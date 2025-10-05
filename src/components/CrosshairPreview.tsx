@@ -1,8 +1,7 @@
-import { useState, useMemo } from 'react';
-import { decodeCrosshairShareCode } from '@/lib/cs2-sharecode';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useState, useEffect } from 'react';
+import { decodeCrosshairShareCode, type Crosshair, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
 import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Monitor, Palette } from 'lucide-react';
 
 interface CrosshairPreviewProps {
   shareCode: string;
@@ -258,22 +257,17 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
         
         <div className="flex items-center gap-1">
           <Palette className="w-3 h-3 text-muted-foreground" />
-          <Select
+          <select
             value={backgroundType}
-            onValueChange={(value) => setBackgroundType(value as BackgroundType)}
+            onChange={(e) => setBackgroundType(e.target.value as BackgroundType)}
             className="text-xs bg-secondary/50 border border-tactical-blue/30 rounded px-2 py-1 text-foreground"
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Select background" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="dust2">Dust2</SelectItem>
-              <SelectItem value="mirage">Mirage</SelectItem>
-              <SelectItem value="inferno">Inferno</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="light">Light</SelectItem>
-            </SelectContent>
-          </Select>
+            <option value="dust2">Dust2</option>
+            <option value="mirage">Mirage</option>
+            <option value="inferno">Inferno</option>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+          </select>
         </div>
       </div>
 
