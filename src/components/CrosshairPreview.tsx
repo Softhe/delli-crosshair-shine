@@ -209,7 +209,8 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   // Better gap handling - CS2 gap behavior
   const gap = crosshair.gap * baseScale * 0.7;
   const hasNegativeGap = crosshair.gap < 0;
-  const actualGap = hasNegativeGap ? Math.abs(gap) * 0.5 : Math.max(1, gap);
+  // Fixed: negative gaps should create overlap, positive gaps create separation
+  const actualGap = hasNegativeGap ? Math.abs(gap) : Math.max(0, gap);
   
   // More accurate outline calculation
   const outlineThickness = crosshair.outlineEnabled ? 
@@ -385,7 +386,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
             />
           )}
           
-          {/* Horizontal lines with improved positioning */}
+          {/* Horizontal lines with corrected positioning */}
           {length > 0 && (
             <>
               {/* Left line */}
@@ -394,7 +395,8 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                   ...lineStyle,
                   width: `${length}px`,
                   height: `${thickness}px`,
-                  right: hasNegativeGap ? `calc(50% - ${length/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
+                  // Fixed: negative gap moves lines towards center (overlap), positive gap separates them
+                  right: hasNegativeGap ? `calc(50% + ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
                   top: '50%',
                   transform: 'translateY(-50%)'
                 }}
@@ -405,7 +407,8 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                   ...lineStyle,
                   width: `${length}px`,
                   height: `${thickness}px`,
-                  left: hasNegativeGap ? `calc(50% - ${length/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
+                  // Fixed: negative gap moves lines towards center (overlap), positive gap separates them
+                  left: hasNegativeGap ? `calc(50% + ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
                   top: '50%',
                   transform: 'translateY(-50%)'
                 }}
@@ -413,7 +416,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
             </>
           )}
           
-          {/* Vertical lines with improved positioning */}
+          {/* Vertical lines with corrected positioning */}
           {length > 0 && (
             <>
               {/* Top line */}
@@ -423,7 +426,8 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                   width: `${thickness}px`,
                   height: `${length}px`,
                   left: '50%',
-                  bottom: hasNegativeGap ? `calc(50% - ${length/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
+                  // Fixed: negative gap moves lines towards center (overlap), positive gap separates them
+                  bottom: hasNegativeGap ? `calc(50% + ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
                   transform: 'translateX(-50%)'
                 }}
               />
@@ -434,7 +438,8 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
                   width: `${thickness}px`,
                   height: `${length}px`,
                   left: '50%',
-                  top: hasNegativeGap ? `calc(50% - ${length/2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
+                  // Fixed: negative gap moves lines towards center (overlap), positive gap separates them
+                  top: hasNegativeGap ? `calc(50% + ${actualGap}px)` : `calc(50% + ${actualGap}px)`,
                   transform: 'translateX(-50%)'
                 }}
               />
