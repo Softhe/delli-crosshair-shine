@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { decodeCrosshairShareCode, type Crosshair, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
 import { Button } from '@/components/ui/button';
 import { ZoomIn, ZoomOut, RotateCcw, Monitor, Palette } from 'lucide-react';
+import { CrosshairSettings } from '@/types/crosshair';
 
 interface CrosshairPreviewProps {
   shareCode: string;
@@ -15,6 +16,8 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
   const [zoom, setZoom] = useState<number>(1);
   const [backgroundType, setBackgroundType] = useState<BackgroundType>('dust2');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (!shareCode?.trim()) {
@@ -46,6 +49,71 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 
     return () => clearTimeout(timeoutId);
   }, [shareCode]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    if (!crosshair) return;
+
+    // Set crosshair style
+    ctx.strokeStyle = `rgb(${crosshair.red}, ${crosshair.green}, ${crosshair.blue})`;
+    ctx.lineWidth = crosshair.thickness;
+    ctx.lineCap = 'round';
+
+    // Draw horizontal line
+    if (crosshair.length > 0) {
+      ctx.beginPath();
+      ctx.moveTo(centerX - crosshair.length / 2, centerY);
+      ctx.lineTo(centerX + crosshair.length / 2, centerY);
+      ctx.stroke();
+    }
+
+    // Draw vertical line
+    if (crosshair.length > 0) {
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY - crosshair.length / 2);
+      ctx.lineTo(centerX, centerY + crosshair.length / 2);
+      ctx.stroke();
+    }
+
+    // Draw center dot
+    if (crosshair.centerDotEnabled) {
+      ctx.fillStyle = `rgb(${crosshair.red}, ${crosshair.green}, ${crosshair.blue})`;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, crosshair.thickness / 2, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    // Draw outline if enabled
+    if (crosshair.outlineEnabled) {
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.lineWidth = crosshair.thickness + 2;
+
+      if (crosshair.length > 0) {
+        ctx.beginPath();
+        ctx.moveTo(centerX - crosshair.length / 2, centerY);
+        ctx.lineTo(centerX + crosshair.length / 2, centerY);
+        ctx.stroke();
+      }
+
+      if (crosshair.length > 0) {
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY - crosshair.length / 2);
+        ctx.lineTo(centerX, centerY + crosshair.length / 2);
+        ctx.stroke();
+      }
+    }
+  }, [crosshair]);
 
   if (isLoading) {
     return (
