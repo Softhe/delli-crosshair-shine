@@ -1,4 +1,18 @@
-# Welcome to your Lovable project
+# CS2 Crosshair Config Generator
+
+A powerful web tool to convert CS2 crosshair share codes into config files instantly. Built with React, TypeScript, and Tailwind CSS.
+
+## 🎯 Features
+
+- ✨ **Instant Conversion**: Convert CS2 share codes to config files in seconds
+- 📁 **History & Favorites**: Automatically saves your last 20 crosshairs and bookmark favorites
+- 📋 **Copy to Clipboard**: Copy config text directly without downloading files
+- ⌨️ **Keyboard Shortcuts**: Speed up your workflow with hotkeys (Ctrl+Enter to generate)
+- 🎨 **Live Preview**: See your crosshair before generating the config
+- ❓ **Comprehensive FAQ**: Built-in help section answering common questions
+- 📱 **Fully Responsive**: Works perfectly on desktop, tablet, and mobile
+- 🔒 **100% Private**: All processing happens locally in your browser
+- 🎮 **Gaming UI**: Beautiful dark theme with neon accents
 
 ## Project info
 
@@ -71,3 +85,36 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## 📚 Documentation
+
+For detailed information about the new UI/UX enhancements:
+
+- **[Enhancement Summary](ENHANCEMENTS_SUMMARY.md)** - Overview of all new features
+- **[UI/UX Documentation](docs/UI_UX_ENHANCEMENTS.md)** - Detailed technical documentation
+- **[Visual Guide](docs/VISUAL_GUIDE.md)** - Layout and design specifications
+- **[Quick Reference](docs/QUICK_REFERENCE.md)** - Developer quick reference
+
+## 🚀 New in Version 2.0
+
+- **History System**: Automatically saves your last 20 generated crosshairs
+- **Favorites**: Bookmark your favorite crosshairs for quick access
+- **Copy to Clipboard**: Alternative to downloading config files
+- **Keyboard Shortcuts**: Ctrl+Enter to generate, plus more shortcuts
+- **FAQ Section**: Comprehensive answers to common questions
+- **Enhanced Layout**: Two-column design with sticky sidebar
+- **Better Mobile**: Fully optimized for mobile devices
+- **Improved Validation**: Real-time feedback with visual indicators
+
+## 🎨 Built With
+
+- **React 18** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool
+- **Tailwind CSS** - Styling
+- **shadcn-ui** - Component library
+- **Lucide React** - Icons
+
+## 📄 License
+
+Built by delli.cc
