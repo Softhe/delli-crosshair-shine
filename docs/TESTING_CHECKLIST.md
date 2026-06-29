@@ -165,7 +165,7 @@
 
 ### Trust Signals
 - [ ] "Safe & Secure" badge displays
-- [ ] "Works with latest CS2" badge displays
+- [ ] "CS2 share-code support" badge displays
 - [ ] "Instant generation" badge displays
 - [ ] Icons are correct (Shield, Check, Clock)
 - [ ] Privacy statement at bottom

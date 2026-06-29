@@ -165,7 +165,7 @@ Three badge indicators at the top:
    - "No data stored or transmitted"
    - 100% privacy guarantee at bottom
 
-2. **Works with latest CS2** (Check icon)
+2. **CS2 share-code support** (Check icon)
    - Ensures users know it's up-to-date
    - Builds confidence
 

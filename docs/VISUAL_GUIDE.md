@@ -7,7 +7,7 @@
 │                         HEADER SECTION                           │
 │  🎯 CS2 Crosshair                                               │
 │  Convert share codes to config files instantly                   │
-│  [Safe & Secure] [Works with latest CS2] [Instant generation]   │
+│  [Safe & Secure] [CS2 share-code support] [Instant generation]   │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────┬─────────────────────────────┐

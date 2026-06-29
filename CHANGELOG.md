@@ -88,7 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Trust Signal Badges** - Security and reliability indicators
   - "Safe & Secure" with shield icon
-  - "Works with latest CS2" with check icon
+  - "CS2 share-code support" with check icon
   - "Instant generation" with clock icon
   - Displayed prominently in header
 
@@ -286,6 +286,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 3. Test locally: `npm run dev`
 4. Build: `npm run build`
 5. Deploy as usual
+
+### Storage Migration
+- Local exports now use storage schema `2.0`
+- Existing `1.0` exports are migrated on import
+- History, favorites, and settings are normalized before being saved
 
 ### Configuration Options
 - Success sound can be disabled (see IMPLEMENTATION_GUIDE.md)

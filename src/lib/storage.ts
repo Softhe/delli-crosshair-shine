@@ -28,17 +28,61 @@ const STORAGE_KEYS = {
 
 const MAX_HISTORY_ITEMS = 20;
 const MAX_FAVORITE_ITEMS = 50;
+const CURRENT_STORAGE_VERSION = '2.0';
+
+interface StorageExportData {
+	version: string;
+	exportDate?: string;
+	history: CrosshairData[];
+	favorites: CrosshairData[];
+	settings?: Record<string, any>;
+}
 
 // Generate unique ID for crosshair
 export const generateCrosshairId = (shareCode: string): string => {
 	return `${shareCode}_${Date.now()}`;
 };
 
+const normalizeCrosshairData = (items: unknown, isFavorite = false): CrosshairData[] => {
+	if (!Array.isArray(items)) {
+		return [];
+	}
+
+	return items
+		.filter((item): item is Partial<CrosshairData> & { shareCode: string } => {
+			return typeof item === 'object' && item !== null && typeof (item as CrosshairData).shareCode === 'string';
+		})
+		.map((item) => ({
+			...item,
+			id: typeof item.id === 'string' ? item.id : generateCrosshairId(item.shareCode),
+			timestamp: typeof item.timestamp === 'number' ? item.timestamp : Date.now(),
+			isFavorite: item.isFavorite ?? isFavorite,
+		}));
+};
+
+const migrateStorageData = (data: any): StorageExportData => {
+	const version = typeof data?.version === 'string' ? data.version : '1.0';
+
+	switch (version) {
+		case '1.0':
+		case '2.0':
+			return {
+				version: CURRENT_STORAGE_VERSION,
+				exportDate: typeof data?.exportDate === 'string' ? data.exportDate : undefined,
+				history: normalizeCrosshairData(data?.history).slice(0, MAX_HISTORY_ITEMS),
+				favorites: normalizeCrosshairData(data?.favorites, true).slice(0, MAX_FAVORITE_ITEMS),
+				settings: typeof data?.settings === 'object' && data.settings !== null ? data.settings : {},
+			};
+		default:
+			throw new Error(`Unsupported storage version: ${version}`);
+	}
+};
+
 // Get all history items
 export const getHistory = (): CrosshairData[] => {
 	try {
 		const data = localStorage.getItem(STORAGE_KEYS.HISTORY);
-		return data ? JSON.parse(data) : [];
+		return data ? normalizeCrosshairData(JSON.parse(data)).slice(0, MAX_HISTORY_ITEMS) : [];
 	} catch (error) {
 		console.error('Error reading history:', error);
 		return [];
@@ -49,8 +93,6 @@ export const getHistory = (): CrosshairData[] => {
 export const addToHistory = (crosshair: Omit<CrosshairData, 'id' | 'timestamp'>): void => {
 	try {
 		const history = getHistory();
-
-		// Check if share code already exists in history
 		const existingIndex = history.findIndex(item => item.shareCode === crosshair.shareCode);
 
 		const newItem: CrosshairData = {
@@ -59,18 +101,12 @@ export const addToHistory = (crosshair: Omit<CrosshairData, 'id' | 'timestamp'>)
 			timestamp: Date.now(),
 		};
 
-		// Remove existing entry if found
 		if (existingIndex !== -1) {
 			history.splice(existingIndex, 1);
 		}
 
-		// Add to beginning of array
 		history.unshift(newItem);
-
-		// Keep only the most recent items
-		const trimmedHistory = history.slice(0, MAX_HISTORY_ITEMS);
-
-		localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(trimmedHistory));
+		localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(history.slice(0, MAX_HISTORY_ITEMS)));
 	} catch (error) {
 		console.error('Error adding to history:', error);
 	}
@@ -100,7 +136,7 @@ export const clearHistory = (): void => {
 export const getFavorites = (): CrosshairData[] => {
 	try {
 		const data = localStorage.getItem(STORAGE_KEYS.FAVORITES);
-		return data ? JSON.parse(data) : [];
+		return data ? normalizeCrosshairData(JSON.parse(data), true).slice(0, MAX_FAVORITE_ITEMS) : [];
 	} catch (error) {
 		console.error('Error reading favorites:', error);
 		return [];
@@ -112,12 +148,10 @@ export const addToFavorites = (crosshair: Omit<CrosshairData, 'id' | 'timestamp'
 	try {
 		const favorites = getFavorites();
 
-		// Check if already exists
 		if (favorites.some(item => item.shareCode === crosshair.shareCode)) {
 			return false;
 		}
 
-		// Check if limit reached
 		if (favorites.length >= MAX_FAVORITE_ITEMS) {
 			throw new Error(`Maximum of ${MAX_FAVORITE_ITEMS} favorites reached`);
 		}
@@ -187,11 +221,12 @@ export const exportAllData = (): string => {
 	const history = getHistory();
 	const favorites = getFavorites();
 
-	const exportData = {
-		version: '1.0',
+	const exportData: StorageExportData = {
+		version: CURRENT_STORAGE_VERSION,
 		exportDate: new Date().toISOString(),
 		history,
 		favorites,
+		settings: getUserSettings(),
 	};
 
 	return JSON.stringify(exportData, null, 2);
@@ -200,18 +235,18 @@ export const exportAllData = (): string => {
 // Import data
 export const importAllData = (jsonString: string): { success: boolean; error?: string } => {
 	try {
-		const data = JSON.parse(jsonString);
+		const data = migrateStorageData(JSON.parse(jsonString));
 
-		// Validate data structure
 		if (!data.version || !Array.isArray(data.history) || !Array.isArray(data.favorites)) {
 			return { success: false, error: 'Invalid data format' };
 		}
 
-		// Import history
 		localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(data.history));
-
-		// Import favorites
 		localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(data.favorites));
+
+		if (data.settings) {
+			localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(data.settings));
+		}
 
 		return { success: true };
 	} catch (error) {

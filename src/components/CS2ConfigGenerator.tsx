@@ -6,7 +6,7 @@ import { CrosshairPreview } from './CrosshairPreview';
 import { CrosshairHistory } from './CrosshairHistory';
 import { FAQ } from './FAQ';
 import { KeyboardShortcuts } from './KeyboardShortcuts';
-import { Download, Copy, Crosshair, HelpCircle, Check, AlertCircle, Sparkles, Shield, Clock, Star, ClipboardCopy } from 'lucide-react';
+import { Download, Copy, Crosshair, HelpCircle, Check, AlertCircle, Sparkles, Shield, Clock, Star, ClipboardCopy, ClipboardPaste, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { decodeCrosshairShareCode, crosshairToConVars, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
 import { addToHistory, toggleFavorite, isFavorited } from '@/lib/storage';
@@ -25,28 +25,14 @@ const EXAMPLE_SHARE_CODES = [
 	'CSGO-sXMJy-i8zaz-T4jvf-G8Ay7-b2D7K'  // s1mple - dot crosshair
 ];
 
-// This function converts CS2 share code to config commands
-const generateConfig = (shareCode: string, aliasName?: string): string => {
+const getCrosshairConVars = (shareCode: string): string => {
 	if (!shareCode || !shareCode.startsWith('CSGO-')) {
 		throw new Error('Share code must start with "CSGO-"');
 	}
 
 	try {
 		const crosshair = decodeCrosshairShareCode(shareCode);
-		const convars = crosshairToConVars(crosshair);
-
-		const fileName = aliasName ? `crosshair_${aliasName}.cfg` : 'crosshair.cfg';
-		const displayName = aliasName || 'mycrosshair';
-		const aliasCommand = `alias "${displayName}" "exec ${fileName}"`;
-
-		return `// CS2 Crosshair Config - Generated from ${shareCode}
-// Place this file in your CS2 config folder
-// Add this to your autoexec.cfg: ${aliasCommand}
-
-// Crosshair settings
-${convars}
-
-echo "Crosshair config loaded successfully!"`;
+		return crosshairToConVars(crosshair);
 	} catch (error) {
 		if (error instanceof InvalidShareCode || error instanceof InvalidCrosshairShareCode) {
 			throw new Error('Invalid crosshair share code format');
@@ -55,6 +41,32 @@ echo "Crosshair config loaded successfully!"`;
 	}
 };
 
+// This function converts CS2 share code to config commands
+const generateConfig = (shareCode: string, aliasName?: string): string => {
+	const convars = getCrosshairConVars(shareCode);
+	const fileName = aliasName ? `crosshair_${aliasName}.cfg` : 'crosshair.cfg';
+	const displayName = aliasName || 'mycrosshair';
+	const aliasCommand = `alias "${displayName}" "exec ${fileName}"`;
+
+	return `// CS2 Crosshair Config - Generated from ${shareCode}
+// Place this file in your CS2 config folder
+// Add this to your autoexec.cfg: ${aliasCommand}
+
+// Crosshair settings
+${convars}
+
+echo "Crosshair config loaded successfully!"`;
+};
+
+const generateConsoleCommand = (shareCode: string): string => {
+	const convars = getCrosshairConVars(shareCode);
+	const commands = convars
+		.split('\n')
+		.map((line) => line.trim().replace(/"/g, ''))
+		.filter(Boolean);
+
+	return [...commands, 'host_writeconfig'].join('; ');
+};
 // Validate share code format
 const validateShareCode = (code: string): { valid: boolean; error?: string } => {
 	if (!code.trim()) {
@@ -114,13 +126,13 @@ export const CS2ConfigGenerator = () => {
 		return () => clearTimeout(timeoutId);
 	}, [shareCode]);
 
-	// Keyboard shortcut: Ctrl/Cmd + Enter to generate
+	// Keyboard shortcut: Ctrl/Cmd + Enter to copy the console command
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
 				e.preventDefault();
 				if (shareCode.trim() && validationState === 'valid') {
-					handleGenerate();
+					handleCopyConsoleCommand();
 				}
 			}
 		};
@@ -212,7 +224,7 @@ export const CS2ConfigGenerator = () => {
 		}
 	};
 
-	const handleCopyConfig = async () => {
+	const handleCopyConsoleCommand = async () => {
 		if (!shareCode.trim()) {
 			toast({
 				title: "Error",
@@ -233,22 +245,21 @@ export const CS2ConfigGenerator = () => {
 		}
 
 		try {
-			const config = generateConfig(shareCode, aliasName);
+			const consoleCommand = generateConsoleCommand(shareCode);
 
-			// Use utility function with fallback support
-			await copyToClipboard(config);
+			await copyToClipboard(consoleCommand);
 
 			// Add to history
 			addCrosshairToHistory(shareCode, aliasName);
 
 			toast({
 				title: "Copied!",
-				description: "Config copied to clipboard. You can paste it directly into your config file.",
+				description: "Console command copied. Paste it into the CS2 console to apply this crosshair instantly.",
 			});
 		} catch (error) {
 			toast({
 				title: "Error",
-				description: error instanceof Error ? error.message : "Failed to copy config. Try downloading instead.",
+				description: error instanceof Error ? error.message : "Failed to copy console command. Try downloading instead.",
 				variant: "destructive",
 			});
 		}
@@ -343,6 +354,69 @@ export const CS2ConfigGenerator = () => {
 
 
 
+	const handlePasteFromClipboard = async () => {
+		try {
+			if (!navigator.clipboard?.readText) {
+				throw new Error('Clipboard reading is not available in this browser.');
+			}
+
+			const clipboardText = (await navigator.clipboard.readText()).trim();
+			const validation = validateShareCode(clipboardText);
+
+			if (!validation.valid) {
+				toast({
+					title: "Clipboard does not contain a valid share code",
+					description: validation.error,
+					variant: "destructive",
+				});
+				return;
+			}
+
+			setShareCode(clipboardText);
+			toast({
+				title: "Pasted!",
+				description: "Share code pasted from clipboard",
+			});
+		} catch (error) {
+			toast({
+				title: "Paste failed",
+				description: error instanceof Error ? error.message : "Unable to read from clipboard. Paste manually instead.",
+				variant: "destructive",
+			});
+		}
+	};
+
+	const handleShareTool = async () => {
+		const shareData = {
+			title: 'CS2 Crosshair Config Generator',
+			text: 'Convert CS2 crosshair share codes into config files locally in your browser.',
+			url: window.location.href,
+		};
+
+		try {
+			if (navigator.share) {
+				await navigator.share(shareData);
+				return;
+			}
+
+			await copyToClipboard(window.location.href);
+			toast({
+				title: "Link copied!",
+				description: "Tool URL copied to clipboard",
+			});
+		} catch (error) {
+			if (error instanceof DOMException && error.name === 'AbortError') {
+				return;
+			}
+
+			toast({
+				title: "Share failed",
+				description: "Unable to share or copy the tool link.",
+				variant: "destructive",
+			});
+		}
+	};
+
 	const handleExampleCode = () => {
 		const randomExample = EXAMPLE_SHARE_CODES[Math.floor(Math.random() * EXAMPLE_SHARE_CODES.length)];
 		setShareCode(randomExample);
@@ -403,7 +477,7 @@ export const CS2ConfigGenerator = () => {
 					</span>
 					<span className="trust-badge">
 						<Check className="w-3 h-3" />
-						Works with latest CS2
+						CS2 share-code support
 					</span>
 					<span className="trust-badge">
 						<Clock className="w-3 h-3" />
@@ -482,6 +556,15 @@ export const CS2ConfigGenerator = () => {
 									Try Example
 								</Button>
 								<Button
+									onClick={handlePasteFromClipboard}
+									variant="tactical"
+									size="sm"
+									className="btn-gaming-press"
+								>
+									<ClipboardPaste className="w-4 h-4" />
+									Paste
+								</Button>
+								<Button
 									onClick={handleToggleFavorite}
 									variant="tactical"
 									size="sm"
@@ -491,6 +574,15 @@ export const CS2ConfigGenerator = () => {
 								>
 									<Star className={`w-4 h-4 ${isFavorite ? 'fill-yellow-500 text-yellow-500' : ''}`} />
 									{isFavorite ? 'Favorited' : 'Favorite'}
+								</Button>
+								<Button
+									onClick={handleShareTool}
+									variant="tactical"
+									size="sm"
+									className="btn-gaming-press"
+								>
+									<Share2 className="w-4 h-4" />
+									Share
 								</Button>
 								<KeyboardShortcuts />
 							</div>
@@ -578,30 +670,30 @@ export const CS2ConfigGenerator = () => {
 
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 							<Button
-								onClick={handleGenerate}
+								onClick={handleCopyConsoleCommand}
 								disabled={isGenerating || !shareCode.trim() || validationState !== 'valid'}
 								variant="gaming"
 								size="lg"
 								className="text-lg py-6 btn-gaming-press interactive-glow"
 							>
-								<Download className="w-5 h-5" />
-								{isGenerating ? 'Generating...' : 'Download Config'}
+								<ClipboardCopy className="w-5 h-5" />
+								Copy Console Command
 							</Button>
 							<Button
-								onClick={handleCopyConfig}
+								onClick={handleGenerate}
 								disabled={isGenerating || !shareCode.trim() || validationState !== 'valid'}
 								variant="outline"
 								size="lg"
 								className="text-lg py-6 btn-gaming-press border-neon-cyan/30 hover:bg-neon-cyan/10"
 							>
-								<ClipboardCopy className="w-5 h-5" />
-								Copy to Clipboard
+								<Download className="w-5 h-5" />
+								{isGenerating ? 'Generating...' : 'Download Config'}
 							</Button>
 						</div>
 
 						{/* Keyboard Shortcut Hint */}
 						<p className="text-xs text-center text-muted-foreground">
-							Press <kbd className="px-2 py-1 bg-muted/50 rounded border border-muted">Ctrl</kbd> + <kbd className="px-2 py-1 bg-muted/50 rounded border border-muted">Enter</kbd> to download
+							Press <kbd className="px-2 py-1 bg-muted/50 rounded border border-muted">Ctrl</kbd> + <kbd className="px-2 py-1 bg-muted/50 rounded border border-muted">Enter</kbd> to copy the console command
 						</p>
 					</Card>
 
@@ -619,11 +711,11 @@ export const CS2ConfigGenerator = () => {
 							</li>
 							<li className="flex items-start gap-3">
 								<span className="flex-shrink-0 w-6 h-6 bg-neon-cyan/20 text-neon-cyan rounded-full flex items-center justify-center text-sm font-bold">3</span>
-								<span>Click "Download Config" or "Copy to Clipboard" to get your config</span>
+								<span>Click "Copy Console Command" to paste directly into the CS2 console, or download the config file instead</span>
 							</li>
 							<li className="flex items-start gap-3">
 								<span className="flex-shrink-0 w-6 h-6 bg-neon-cyan/20 text-neon-cyan rounded-full flex items-center justify-center text-sm font-bold">4</span>
-								<span>Place the .cfg file in your CS2 config folder</span>
+								<span>For downloaded files, place the .cfg file in your CS2 config folder</span>
 							</li>
 							<li className="flex items-start gap-3">
 								<span className="flex-shrink-0 w-6 h-6 bg-neon-cyan/20 text-neon-cyan rounded-full flex items-center justify-center text-sm font-bold">5</span>
@@ -646,7 +738,7 @@ export const CS2ConfigGenerator = () => {
 							</li>
 							<li className="flex items-start gap-3">
 								<span className="flex-shrink-0 w-6 h-6 bg-neon-cyan/20 text-neon-cyan rounded-full flex items-center justify-center text-sm font-bold">6</span>
-								<span>Load the config in-game by opening the console (~) and typing: <code className="text-neon-cyan">exec crosshair.cfg</code></span>
+								<span>For the one-click command, paste it into the console (~) and press Enter. For downloaded files, type <code className="text-neon-cyan">exec crosshair.cfg</code>; if you used an alias, type the alias name instead.</span>
 							</li>
 						</ol>
 					</Card>
