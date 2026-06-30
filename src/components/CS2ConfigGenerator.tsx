@@ -44,6 +44,7 @@ const generateConfig = (shareCode: string, aliasName?: string): string => {
 
 // Crosshair settings
 ${convars}
+host_writeconfig
 
 echo "Crosshair config loaded successfully!"`;
 };

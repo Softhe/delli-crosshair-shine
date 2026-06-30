@@ -1,8 +1,7 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { decodeCrosshairShareCode, type Crosshair, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
 import { Button } from '@/components/ui/button';
 import { ZoomIn, ZoomOut, RotateCcw, Monitor, Palette } from 'lucide-react';
-import { CrosshairSettings } from '@/types/crosshair';
 
 interface CrosshairPreviewProps {
 	shareCode: string;
@@ -16,8 +15,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 	const [zoom, setZoom] = useState<number>(1);
 	const [backgroundType, setBackgroundType] = useState<BackgroundType>('dust2');
 	const [isLoading, setIsLoading] = useState<boolean>(false);
-
-	const canvasRef = useRef<HTMLCanvasElement>(null);
 
 	useEffect(() => {
 		if (!shareCode?.trim()) {
@@ -50,70 +47,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 		return () => clearTimeout(timeoutId);
 	}, [shareCode]);
 
-	useEffect(() => {
-		const canvas = canvasRef.current;
-		if (!canvas) return;
-
-		const ctx = canvas.getContext('2d');
-		if (!ctx) return;
-
-		// Clear canvas
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-		const centerX = canvas.width / 2;
-		const centerY = canvas.height / 2;
-
-		if (!crosshair) return;
-
-		// Set crosshair style
-		ctx.strokeStyle = `rgb(${crosshair.red}, ${crosshair.green}, ${crosshair.blue})`;
-		ctx.lineWidth = crosshair.thickness;
-		ctx.lineCap = 'round';
-
-		// Draw horizontal line
-		if (crosshair.length > 0) {
-			ctx.beginPath();
-			ctx.moveTo(centerX - crosshair.length / 2, centerY);
-			ctx.lineTo(centerX + crosshair.length / 2, centerY);
-			ctx.stroke();
-		}
-
-		// Draw vertical line
-		if (crosshair.length > 0) {
-			ctx.beginPath();
-			ctx.moveTo(centerX, centerY - crosshair.length / 2);
-			ctx.lineTo(centerX, centerY + crosshair.length / 2);
-			ctx.stroke();
-		}
-
-		// Draw center dot
-		if (crosshair.centerDotEnabled) {
-			ctx.fillStyle = `rgb(${crosshair.red}, ${crosshair.green}, ${crosshair.blue})`;
-			ctx.beginPath();
-			ctx.arc(centerX, centerY, crosshair.thickness / 2, 0, 2 * Math.PI);
-			ctx.fill();
-		}
-
-		// Draw outline if enabled
-		if (crosshair.outlineEnabled) {
-			ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
-			ctx.lineWidth = crosshair.thickness + 2;
-
-			if (crosshair.length > 0) {
-				ctx.beginPath();
-				ctx.moveTo(centerX - crosshair.length / 2, centerY);
-				ctx.lineTo(centerX + crosshair.length / 2, centerY);
-				ctx.stroke();
-			}
-
-			if (crosshair.length > 0) {
-				ctx.beginPath();
-				ctx.moveTo(centerX, centerY - crosshair.length / 2);
-				ctx.lineTo(centerX, centerY + crosshair.length / 2);
-				ctx.stroke();
-			}
-		}
-	}, [crosshair]);
 
 	if (isLoading) {
 		return (
@@ -186,17 +119,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 	const crosshairColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
 	const alpha = crosshair.alphaEnabled ? crosshair.alpha / 255 : 1;
 
-	// Debug log for this specific crosshair
-	console.log('Crosshair values:', {
-		length: crosshair.length,
-		thickness: crosshair.thickness,
-		gap: crosshair.gap,
-		outline: crosshair.outline,
-		shareCode,
-		centerDotEnabled: crosshair.centerDotEnabled,
-		color: crosshair.color,
-		style: crosshair.style
-	});
 
 	// Responsive scaling based on screen size - more accurate CS2 proportions
 	const screenWidth = window.innerWidth;
@@ -208,13 +130,11 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 	const length = isZeroLength ? 4 : Math.max(8, crosshair.length * baseScale * 0.8);
 	const thickness = Math.max(1, crosshair.thickness * baseScale * 0.6); // More precise thickness
 
-	// Better gap handling - CS2 gap behavior
-	// When length is 0 with negative gap, lines should overlap to form a dot
+	// Keep each inner edge anchored to the decoded CS2 gap. Negative gaps overlap symmetrically.
 	const gap = crosshair.gap * baseScale * 0.7;
-	const hasNegativeGap = crosshair.gap < 0;
-	const actualGap = hasNegativeGap ?
-		(isZeroLength ? 0 : Math.abs(gap) * 0.5) :
-		Math.max(1, gap);
+	const edgeGap = isZeroLength ? 0 : gap;
+	const fromCenter = (offset: number) => `calc(50% ${offset < 0 ? '-' : '+'} ${Math.abs(offset)}px)`;
+	const beforeCenter = (offset: number) => `calc(50% ${offset < 0 ? '+' : '-'} ${Math.abs(offset)}px)`;
 
 	// More accurate outline calculation
 	const outlineThickness = crosshair.outlineEnabled ?
@@ -268,19 +188,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 
 	const backgroundStyle = getBackgroundStyle(backgroundType);
 
-	console.log('Calculated values:', {
-		length,
-		thickness,
-		gap: crosshair.gap,
-		actualGap,
-		hasNegativeGap,
-		outlineThickness,
-		baseScale,
-		crosshairLength: crosshair.length,
-		crosshairThickness: crosshair.thickness,
-		crosshairColor,
-		alpha
-	});
 
 	// Enhanced line styling with proper outline support (reverted)
 	const lineStyle = {
@@ -398,7 +305,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 								...lineStyle,
 								width: `${length}px`,
 								height: `${thickness}px`,
-								right: hasNegativeGap ? `calc(50% - ${length / 2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
+								left: beforeCenter(edgeGap + length),
 								top: '50%',
 								transform: 'translateY(-50%)'
 							}}
@@ -409,7 +316,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 								...lineStyle,
 								width: `${length}px`,
 								height: `${thickness}px`,
-								left: hasNegativeGap ? `calc(50% - ${length / 2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
+								left: fromCenter(edgeGap),
 								top: '50%',
 								transform: 'translateY(-50%)'
 							}}
@@ -425,7 +332,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 								width: `${thickness}px`,
 								height: `${length}px`,
 								left: '50%',
-								bottom: hasNegativeGap ? `calc(50% - ${length / 2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
+								top: beforeCenter(edgeGap + length),
 								transform: 'translateX(-50%)'
 							}}
 						/>
@@ -436,7 +343,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 								width: `${thickness}px`,
 								height: `${length}px`,
 								left: '50%',
-								top: hasNegativeGap ? `calc(50% - ${length / 2 + actualGap}px)` : `calc(50% + ${actualGap}px)`,
+								top: fromCenter(edgeGap),
 								transform: 'translateX(-50%)'
 							}}
 						/>
