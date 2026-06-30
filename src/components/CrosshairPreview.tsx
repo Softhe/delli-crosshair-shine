@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { decodeCrosshairShareCode, type Crosshair, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
-import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, RotateCcw, Monitor, Palette } from 'lucide-react';
+import { Monitor, Palette } from 'lucide-react';
 
 interface CrosshairPreviewProps {
 	shareCode: string;
@@ -12,7 +11,6 @@ type BackgroundType = 'dust2' | 'mirage' | 'inferno' | 'dark' | 'light';
 export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 	const [crosshair, setCrosshair] = useState<Crosshair | null>(null);
 	const [error, setError] = useState<string | null>(null);
-	const [zoom, setZoom] = useState<number>(1);
 	const [backgroundType, setBackgroundType] = useState<BackgroundType>('dust2');
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -109,7 +107,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 			case 1: return { r: 0, g: 255, b: 0 };      // Green
 			case 2: return { r: 255, g: 255, b: 0 };    // Yellow
 			case 3: return { r: 0, g: 0, b: 255 };      // Blue
-			case 4: return { r: 0, g: 255, b: 255 };    // Cyan
+			case 4: return { r: 245, g: 255, b: 255 };  // CS2 cyan reads near-white in-game
 			case 5: return { r: red, g: green, b: blue }; // Custom
 			default: return { r: 0, g: 255, b: 255 };   // Default to cyan
 		}
@@ -120,25 +118,24 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 	const alpha = crosshair.alphaEnabled ? crosshair.alpha / 255 : 1;
 
 
-	// Responsive scaling based on screen size - more accurate CS2 proportions
-	const screenWidth = window.innerWidth;
-	const baseScale = (screenWidth < 768 ? 14 : screenWidth < 1024 ? 16 : screenWidth < 1280 ? 20 : 22) * zoom;
+	const gameLengthPx = crosshair.length * 10;
+	const gameThicknessPx = Math.max(1, crosshair.thickness * 2);
+	const gameGapPx = crosshair.gap + 4;
 
-	// More accurate CS2 crosshair calculations
-	// When length is 0, use a much smaller value to create dot-like appearance
-	const isZeroLength = crosshair.length === 0;
-	const length = isZeroLength ? 4 : Math.max(8, crosshair.length * baseScale * 0.8);
-	const thickness = Math.max(1, crosshair.thickness * baseScale * 0.6); // More precise thickness
+	const naturalLength = Math.max(1, gameLengthPx);
+	const naturalThickness = Math.max(1, gameThicknessPx);
+	const naturalEdgeGap = gameGapPx;
+	const naturalSpan = Math.max(naturalLength * 2 + Math.max(0, naturalEdgeGap) * 2, naturalThickness);
+	const autoScale = Math.min(6, Math.max(1, 34 / naturalSpan, 2 / naturalThickness));
 
-	// Keep each inner edge anchored to the decoded CS2 gap. Negative gaps overlap symmetrically.
-	const gap = crosshair.gap * baseScale * 0.7;
-	const edgeGap = isZeroLength ? 0 : gap;
+	const length = naturalLength * autoScale;
+	const thickness = naturalThickness * autoScale;
+	const edgeGap = naturalEdgeGap * autoScale;
 	const fromCenter = (offset: number) => `calc(50% ${offset < 0 ? '-' : '+'} ${Math.abs(offset)}px)`;
 	const beforeCenter = (offset: number) => `calc(50% ${offset < 0 ? '+' : '-'} ${Math.abs(offset)}px)`;
 
-	// More accurate outline calculation
 	const outlineThickness = crosshair.outlineEnabled ?
-		Math.max(0.5, crosshair.outline * baseScale * 0.3) : 0;
+		Math.max(0.5, crosshair.outline * autoScale) : 0;
 
 	// Background variations
 	const getBackgroundStyle = (type: BackgroundType) => {
@@ -206,36 +203,12 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 		<div className="space-y-4">
 			{/* Control Panel */}
 			<div className="flex flex-wrap items-center justify-center gap-2 p-3 bg-card/30 border border-tactical-blue/20 rounded-lg">
-				<div className="flex items-center gap-1">
-					<Button
-						variant="tactical"
-						size="sm"
-						onClick={() => setZoom(Math.max(0.5, zoom - 0.25))}
-						disabled={zoom <= 0.5}
-					>
-						<ZoomOut className="w-3 h-3" />
-					</Button>
-					<span className="text-xs text-muted-foreground min-w-[3rem] text-center">
-						{Math.round(zoom * 100)}%
+				<div className="flex items-center gap-2">
+					<span className="text-xs text-muted-foreground">Preview scale</span>
+					<span className="rounded border border-primary/20 bg-primary/10 px-2 py-1 text-xs text-primary">
+						Auto {autoScale.toFixed(1)}x
 					</span>
-					<Button
-						variant="tactical"
-						size="sm"
-						onClick={() => setZoom(Math.min(3, zoom + 0.25))}
-						disabled={zoom >= 3}
-					>
-						<ZoomIn className="w-3 h-3" />
-					</Button>
 				</div>
-
-				<Button
-					variant="tactical"
-					size="sm"
-					onClick={() => setZoom(1)}
-				>
-					<RotateCcw className="w-3 h-3" />
-				</Button>
-
 				<div className="flex items-center gap-1">
 					<Palette className="w-3 h-3 text-muted-foreground" />
 					<select
@@ -253,7 +226,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 			</div>
 
 			{/* Preview Container */}
-			<div className="w-72 h-72 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg relative overflow-hidden">
+			<div className="aspect-[4/3] w-full max-w-[512px] flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg relative overflow-hidden">
 				{/* Dynamic background based on selection */}
 				<div className="absolute inset-0" style={{ background: backgroundStyle.background }}></div>
 
@@ -286,8 +259,8 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 						<div
 							style={{
 								...lineStyle,
-								width: `${Math.max(1, thickness * 0.7)}px`,
-								height: `${Math.max(1, thickness * 0.7)}px`,
+								width: `${thickness}px`,
+								height: `${thickness}px`,
 								borderRadius: '50%',
 								left: '50%',
 								top: '50%',
