@@ -401,11 +401,24 @@ export const CS2ConfigGenerator = () => {
 
 			<Card className="p-5 md:p-6 bg-card/30 border-tactical-blue/20 animate-[slide-in-up_0.5s_ease-out_0.2s_both]">
 				<h2 className="text-base font-semibold text-neon-cyan mb-3">Use it in CS2</h2>
-				<ol className="space-y-2 text-sm text-muted-foreground">
-					<li>1. Copy your crosshair share code from CS2.</li>
-					<li>2. Paste it here and copy the console command.</li>
-					<li>3. Open the CS2 console, paste the command, and press Enter.</li>
-				</ol>
+				<div className="space-y-4 text-sm text-muted-foreground">
+					<div>
+						<p className="mb-2 font-medium text-foreground">Console command</p>
+						<ol className="space-y-2">
+							<li>1. Copy your crosshair share code from CS2.</li>
+							<li>2. Paste it here and copy the console command.</li>
+							<li>3. Open the CS2 console, paste the command, and press Enter.</li>
+						</ol>
+					</div>
+					<div>
+						<p className="mb-2 font-medium text-foreground">Download file</p>
+						<ol className="space-y-2">
+							<li>1. Paste your share code and click Download.</li>
+							<li>2. Move crosshair.cfg to your CS2 cfg folder.</li>
+							<li>3. Open the CS2 console, type exec crosshair.cfg, and press Enter.</li>
+						</ol>
+					</div>
+				</div>
 			</Card>
 
 			<CrosshairHistory
