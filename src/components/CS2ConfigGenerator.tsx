@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { CrosshairPreview } from './CrosshairPreview';
+import { CrosshairHistory } from './CrosshairHistory';
 import { Download, Crosshair, Check, AlertCircle, Sparkles, ClipboardCopy, ClipboardPaste } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { decodeCrosshairShareCode, crosshairToConVars, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
@@ -87,6 +88,7 @@ export const CS2ConfigGenerator = () => {
 	const aliasName = '';
 	const [validationState, setValidationState] = useState<'idle' | 'valid' | 'invalid'>('idle');
 	const [errorMessage, setErrorMessage] = useState('');
+	const [historyKey, setHistoryKey] = useState(0);
 	const { toast } = useToast();
 
 
@@ -141,6 +143,7 @@ export const CS2ConfigGenerator = () => {
 					alphaEnabled: crosshair.alphaEnabled,
 				},
 			});
+			setHistoryKey(prev => prev + 1);
 		} catch (err) {
 			console.error('Failed to add to history:', err);
 		}
@@ -293,6 +296,13 @@ export const CS2ConfigGenerator = () => {
 	};
 
 
+	const handleSelectFromHistory = (historyShareCode: string) => {
+		setShareCode(historyShareCode);
+		toast({
+			title: "Loaded",
+			description: "Crosshair loaded from history",
+		});
+	};
 
 	// Optional: Play success sound (can be toggled off)
 	const playSuccessSound = () => {
@@ -398,7 +408,12 @@ export const CS2ConfigGenerator = () => {
 				</ol>
 			</Card>
 
+			<CrosshairHistory
+				key={historyKey}
+				onSelectCrosshair={handleSelectFromHistory}
+			/>
 			<p className="text-center text-xs text-muted-foreground">All processing happens locally in your browser.</p>
 		</div>
 	);
 };
+
