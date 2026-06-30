@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -81,14 +82,67 @@ const validateShareCode = (code: string): { valid: boolean; error?: string } => 
 	}
 };
 
+const decodeUrlShareCode = (value: string | null): string => {
+	if (!value) {
+		return '';
+	}
+
+	try {
+		return decodeURIComponent(value).trim();
+	} catch {
+		return value.trim();
+	}
+};
+
+const getShareCodeFromUrl = (location: { pathname: string; search: string }): string => {
+	const params = new URLSearchParams(location.search);
+	const queryCode = params.get('code') || params.get('crosshair');
+
+	if (queryCode) {
+		return decodeUrlShareCode(queryCode);
+	}
+
+	const pathCode = location.pathname.split('/').filter(Boolean)[0];
+	return decodeUrlShareCode(pathCode || null);
+};
+
+const getShareCodeUrlPath = (code: string): string => `/${encodeURIComponent(code)}`;
+
 export const CS2ConfigGenerator = () => {
-	const [shareCode, setShareCode] = useState('');
+	const location = useLocation();
+	const navigate = useNavigate();
+	const [shareCode, setShareCode] = useState(() => getShareCodeFromUrl(location));
 	const [isGenerating, setIsGenerating] = useState(false);
 	const aliasName = '';
 	const [validationState, setValidationState] = useState<'idle' | 'valid' | 'invalid'>('idle');
 	const [errorMessage, setErrorMessage] = useState('');
 	const [historyKey, setHistoryKey] = useState(0);
 	const { toast } = useToast();
+
+	useEffect(() => {
+		const urlShareCode = getShareCodeFromUrl(location);
+		setShareCode((currentShareCode) => currentShareCode === urlShareCode ? currentShareCode : urlShareCode);
+	}, [location.pathname, location.search]);
+
+	useEffect(() => {
+		const trimmedShareCode = shareCode.trim();
+
+		if (!trimmedShareCode) {
+			if (location.pathname !== '/' || location.search) {
+				navigate('/', { replace: true });
+			}
+			return;
+		}
+
+		if (!validateShareCode(trimmedShareCode).valid) {
+			return;
+		}
+
+		const shareUrlPath = getShareCodeUrlPath(trimmedShareCode);
+		if (location.pathname !== shareUrlPath || location.search) {
+			navigate(shareUrlPath, { replace: true });
+		}
+	}, [shareCode, location.pathname, location.search, navigate]);
 
 	useEffect(() => {
 		if (!shareCode.trim()) {
