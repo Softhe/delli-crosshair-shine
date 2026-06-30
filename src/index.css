@@ -2,88 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CS2 Gaming Design System - Dark tactical aesthetic with neon accents */
-
 @layer base {
 	:root {
-		/* Core Gaming Color Palette */
-		--background: 220 15% 8%;
-		--foreground: 210 30% 95%;
+		--background: 224 22% 7%;
+		--foreground: 42 28% 94%;
 
-		--card: 220 15% 10%;
-		--card-foreground: 210 30% 95%;
+		--card: 222 18% 10%;
+		--card-foreground: 42 28% 94%;
 
-		--popover: 220 15% 10%;
-		--popover-foreground: 210 30% 95%;
+		--popover: 222 18% 10%;
+		--popover-foreground: 42 28% 94%;
 
-		/* CS2 Themed Primary Colors */
-		--primary: 195 100% 50%;
-		--primary-foreground: 220 15% 8%;
+		--primary: 168 82% 46%;
+		--primary-foreground: 220 28% 7%;
 
-		--secondary: 220 15% 15%;
-		--secondary-foreground: 210 30% 95%;
+		--secondary: 226 14% 16%;
+		--secondary-foreground: 42 28% 94%;
 
-		--muted: 220 15% 12%;
-		--muted-foreground: 210 15% 65%;
+		--muted: 225 13% 17%;
+		--muted-foreground: 38 12% 66%;
 
-		--accent: 195 100% 60%;
-		--accent-foreground: 220 15% 8%;
+		--accent: 28 92% 58%;
+		--accent-foreground: 220 28% 7%;
 
-		/* Gaming Accent Colors */
-		--neon-cyan: 195 100% 50%;
-		--neon-purple: 270 100% 60%;
-		--neon-orange: 30 100% 60%;
-		--tactical-blue: 220 50% 40%;
+		--neon-cyan: 168 82% 46%;
+		--neon-purple: 325 72% 58%;
+		--neon-orange: 28 92% 58%;
+		--tactical-blue: 214 36% 38%;
 
-		/* Status Colors */
-		--success: 120 60% 50%;
-		--warning: 45 100% 60%;
-		--destructive: 0 84% 60%;
-		--destructive-foreground: 210 30% 95%;
+		--success: 141 62% 48%;
+		--warning: 42 94% 56%;
+		--destructive: 0 74% 58%;
+		--destructive-foreground: 42 28% 94%;
 
-		/* UI Elements */
-		--border: 220 15% 20%;
-		--input: 220 15% 15%;
-		--ring: 195 100% 50%;
+		--border: 222 16% 22%;
+		--input: 222 16% 18%;
+		--ring: 168 82% 46%;
 
-		/* Gaming Gradients */
-		--gradient-primary: linear-gradient(135deg, hsl(var(--neon-cyan)) 0%, hsl(var(--neon-purple)) 100%);
-		--gradient-secondary: linear-gradient(135deg, hsl(var(--tactical-blue)) 0%, hsl(var(--neon-cyan)) 100%);
-		--gradient-background: linear-gradient(135deg, hsl(220 15% 6%) 0%, hsl(220 20% 10%) 50%, hsl(195 30% 8%) 100%);
+		--gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+		--gradient-secondary: linear-gradient(135deg, hsl(214 36% 26%) 0%, hsl(var(--primary)) 100%);
+		--gradient-background:
+			radial-gradient(circle at 12% 12%, hsl(168 82% 46% / 0.14), transparent 28rem),
+			radial-gradient(circle at 86% 8%, hsl(28 92% 58% / 0.13), transparent 24rem),
+			linear-gradient(135deg, hsl(224 24% 6%) 0%, hsl(228 18% 9%) 48%, hsl(222 20% 7%) 100%);
 
-		/* Tactical Elements */
-		--crosshair-preview-bg: 220 15% 12%;
-		--crosshair-color: 195 100% 50%;
+		--crosshair-preview-bg: 222 18% 12%;
+		--crosshair-color: 168 82% 46%;
 
-		--radius: 0.75rem;
+		--radius: 0.5rem;
 
 		--sidebar-background: 0 0% 98%;
-
 		--sidebar-foreground: 240 5.3% 26.1%;
-
 		--sidebar-primary: 240 5.9% 10%;
-
 		--sidebar-primary-foreground: 0 0% 98%;
-
 		--sidebar-accent: 240 4.8% 95.9%;
-
 		--sidebar-accent-foreground: 240 5.9% 10%;
-
 		--sidebar-border: 220 13% 91%;
-
 		--sidebar-ring: 217.2 91.2% 59.8%;
 	}
 
-	/* Enhanced gaming theme for different lighting conditions */
 	.dark {
-		--background: 220 25% 4%;
-		--foreground: 210 30% 98%;
-		--card: 220 25% 6%;
-		--card-foreground: 210 30% 98%;
-		--primary: 195 100% 55%;
-		--neon-cyan: 195 100% 55%;
-		--tactical-blue: 220 60% 35%;
-		--gradient-background: linear-gradient(135deg, hsl(220 25% 2%) 0%, hsl(220 30% 6%) 50%, hsl(195 40% 4%) 100%);
+		--background: 224 22% 7%;
+		--foreground: 42 28% 94%;
+		--card: 222 18% 10%;
+		--card-foreground: 42 28% 94%;
+		--primary: 168 82% 46%;
+		--neon-cyan: 168 82% 46%;
+		--tactical-blue: 214 36% 38%;
 	}
 }
 
@@ -92,26 +77,43 @@
 		@apply border-border;
 	}
 
+	html {
+		background: hsl(var(--background));
+	}
+
 	body {
-		@apply text-foreground;
-		background: var(--gradient-background);
+		@apply text-foreground antialiased;
 		min-height: 100vh;
+		background: var(--gradient-background);
+		font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 	}
 
-	/* Gaming UI Animations */
-	.glow {
-		box-shadow: 0 0 20px hsl(var(--neon-cyan) / 0.3);
-	}
-
-	.glow-intense {
-		box-shadow: 0 0 30px hsl(var(--neon-cyan) / 0.5), 0 0 60px hsl(var(--neon-cyan) / 0.2);
-	}
-
-	.tactical-grid {
+	body::before {
+		content: '';
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
 		background-image:
-			linear-gradient(rgba(195, 255, 255, 0.03) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(195, 255, 255, 0.03) 1px, transparent 1px);
-		background-size: 20px 20px;
+			linear-gradient(hsl(0 0% 100% / 0.035) 1px, transparent 1px),
+			linear-gradient(90deg, hsl(0 0% 100% / 0.025) 1px, transparent 1px);
+		background-size: 48px 48px;
+		mask-image: linear-gradient(to bottom, black, transparent 85%);
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		@apply font-bold;
+		line-height: 1.15;
+		letter-spacing: 0;
+	}
+
+	p {
+		line-height: 1.6;
 	}
 }
 
@@ -147,9 +149,8 @@
 		box-shadow: 0 0 10px hsl(var(--crosshair-color));
 	}
 
-	/* Gaming Design System Utilities */
 	.text-gaming-primary {
-		@apply text-neon-cyan font-semibold;
+		@apply text-primary font-semibold;
 	}
 
 	.text-gaming-secondary {
@@ -157,48 +158,40 @@
 	}
 
 	.border-gaming-glow {
-		border: 1px solid hsl(var(--neon-cyan));
-		box-shadow: 0 0 10px hsl(var(--neon-cyan) / 0.3);
-		animation: glow-pulse 2s ease-in-out infinite;
+		border: 1px solid hsl(var(--primary));
+		box-shadow: 0 0 18px hsl(var(--primary) / 0.25);
 	}
 
 	.hover-gaming {
-		@apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
+		@apply transition-all duration-200 hover:shadow-lg;
 	}
 
-	/* Enhanced Card Styles */
 	.card-gaming {
-		@apply bg-card/50 border-tactical-blue/30 backdrop-blur-sm p-8;
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 0 20px hsl(var(--neon-cyan) / 0.05);
+		@apply rounded-lg border border-white/10 bg-card/70 p-5 shadow-2xl shadow-black/25 backdrop-blur-xl md:p-6;
 	}
 
-	/* Button Press Effect */
 	.btn-gaming-press {
-		@apply active:scale-95 active:shadow-inner;
+		@apply active:scale-[0.98];
 		transition: transform 0.1s ease, box-shadow 0.1s ease;
 	}
 
-	/* Trust Badge */
 	.trust-badge {
-		@apply inline-flex items-center gap-2 px-3 py-1 rounded-full bg-success/10 border border-success/30 text-success text-xs font-medium;
+		@apply inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs font-medium text-success;
 	}
 
-	/* Help Tooltip Trigger */
 	.help-trigger {
-		@apply inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted/30 border border-muted text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors cursor-help;
+		@apply inline-flex h-5 w-5 cursor-help items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-muted-foreground transition-colors hover:bg-white/[0.08] hover:text-foreground;
 	}
 }
 
-/* Gaming Animations */
 @keyframes glow-pulse {
-
 	0%,
 	100% {
-		box-shadow: 0 0 10px hsl(var(--neon-cyan) / 0.3);
+		box-shadow: 0 0 10px hsl(var(--primary) / 0.25);
 	}
 
 	50% {
-		box-shadow: 0 0 20px hsl(var(--neon-cyan) / 0.5), 0 0 30px hsl(var(--neon-cyan) / 0.2);
+		box-shadow: 0 0 22px hsl(var(--primary) / 0.42), 0 0 34px hsl(var(--accent) / 0.16);
 	}
 }
 
@@ -224,35 +217,6 @@
 	}
 }
 
-/* Typography Improvements */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-	@apply font-bold;
-	line-height: 1.2;
-	letter-spacing: -0.02em;
-}
-
-h1 {
-	@apply text-4xl md:text-5xl;
-}
-
-h2 {
-	@apply text-3xl md:text-4xl;
-}
-
-h3 {
-	@apply text-2xl md:text-3xl;
-}
-
-p {
-	line-height: 1.6;
-}
-
-/* Enhanced Spacing */
 .section-spacing {
 	@apply space-y-8 md:space-y-12;
 }
@@ -261,12 +225,10 @@ p {
 	@apply p-6 md:p-8;
 }
 
-/* Micro Interactions */
 .interactive-scale {
-	@apply transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98];
+	@apply transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99];
 }
 
 .interactive-glow {
-	@apply transition-shadow duration-300 hover:shadow-[0_0_20px_hsl(var(--neon-cyan)/0.3)];
+	@apply transition-shadow duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.24)];
 }
-
