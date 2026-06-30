@@ -3,20 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { CrosshairPreview } from './CrosshairPreview';
-import { CrosshairHistory } from './CrosshairHistory';
-import { FAQ } from './FAQ';
-import { KeyboardShortcuts } from './KeyboardShortcuts';
-import { Download, Copy, Crosshair, HelpCircle, Check, AlertCircle, Sparkles, Shield, Clock, Star, ClipboardCopy, ClipboardPaste, Share2 } from 'lucide-react';
+import { Download, Crosshair, Check, AlertCircle, Sparkles, ClipboardCopy, ClipboardPaste } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { decodeCrosshairShareCode, crosshairToConVars, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
-import { addToHistory, toggleFavorite, isFavorited } from '@/lib/storage';
+import { addToHistory } from '@/lib/storage';
 import { copyToClipboard } from '@/lib/clipboard';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 // Example share codes for quick testing (from CS2 pro players)
 const EXAMPLE_SHARE_CODES = [
@@ -93,21 +84,11 @@ const validateShareCode = (code: string): { valid: boolean; error?: string } => 
 export const CS2ConfigGenerator = () => {
 	const [shareCode, setShareCode] = useState('');
 	const [isGenerating, setIsGenerating] = useState(false);
-	const [aliasName, setAliasName] = useState('');
+	const aliasName = '';
 	const [validationState, setValidationState] = useState<'idle' | 'valid' | 'invalid'>('idle');
 	const [errorMessage, setErrorMessage] = useState('');
-	const [isFavorite, setIsFavorite] = useState(false);
-	const [historyKey, setHistoryKey] = useState(0);
 	const { toast } = useToast();
 
-	// Check favorite status when share code changes
-	useEffect(() => {
-		if (shareCode.trim() && validationState === 'valid') {
-			setIsFavorite(isFavorited(shareCode));
-		} else {
-			setIsFavorite(false);
-		}
-	}, [shareCode, validationState]);
 
 	// Validate share code on change (debounced)
 	useEffect(() => {
@@ -160,7 +141,6 @@ export const CS2ConfigGenerator = () => {
 					alphaEnabled: crosshair.alphaEnabled,
 				},
 			});
-			setHistoryKey(prev => prev + 1);
 		} catch (err) {
 			console.error('Failed to add to history:', err);
 		}
@@ -265,92 +245,8 @@ export const CS2ConfigGenerator = () => {
 		}
 	};
 
-	const handleToggleFavorite = () => {
-		if (!shareCode.trim() || validationState !== 'valid') {
-			return;
-		}
 
-		try {
-			const crosshair = decodeCrosshairShareCode(shareCode);
-			const newFavStatus = toggleFavorite({
-				shareCode,
-				aliasName: aliasName || undefined,
-				settings: {
-					style: crosshair.style,
-					length: crosshair.length,
-					thickness: crosshair.thickness,
-					gap: crosshair.gap,
-					outline: crosshair.outline,
-					outlineEnabled: crosshair.outlineEnabled,
-					centerDotEnabled: crosshair.centerDotEnabled,
-					color: crosshair.color,
-					alpha: crosshair.alpha,
-					alphaEnabled: crosshair.alphaEnabled,
-				},
-			});
 
-			setIsFavorite(newFavStatus);
-			setHistoryKey(prev => prev + 1);
-
-			toast({
-				title: newFavStatus ? "Added to favorites" : "Removed from favorites",
-				description: newFavStatus ? "Crosshair saved to favorites" : "Crosshair removed from favorites",
-			});
-		} catch (error) {
-			toast({
-				title: "Error",
-				description: error instanceof Error ? error.message : "Failed to update favorites",
-				variant: "destructive",
-			});
-		}
-	};
-
-	const handleSelectFromHistory = (historyShareCode: string, historyAliasName?: string) => {
-		setShareCode(historyShareCode);
-		if (historyAliasName) {
-			setAliasName(historyAliasName);
-		}
-		toast({
-			title: "Loaded!",
-			description: "Crosshair loaded from history",
-		});
-	};
-
-	const handleCopyPath = async () => {
-		const configPath = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\game\\csgo\\cfg";
-		try {
-			await copyToClipboard(configPath);
-			toast({
-				title: "Copied!",
-				description: "Config path copied to clipboard",
-			});
-		} catch (error) {
-			toast({
-				title: "Error",
-				description: "Failed to copy to clipboard. Please copy manually.",
-				variant: "destructive",
-			});
-		}
-	};
-
-	const handleCopyAlias = async () => {
-		if (!aliasName.trim()) return;
-		const fileName = `crosshair_${aliasName}.cfg`;
-		const aliasCommand = `alias "${aliasName}" "exec ${fileName}"`;
-		try {
-			await copyToClipboard(aliasCommand);
-			toast({
-				title: "Copied!",
-				description: "Alias command copied to clipboard",
-			});
-		} catch (error) {
-			toast({
-				title: "Error",
-				description: "Failed to copy to clipboard. Please copy manually.",
-				variant: "destructive",
-			});
-		}
-	};
 
 
 
@@ -386,36 +282,6 @@ export const CS2ConfigGenerator = () => {
 		}
 	};
 
-	const handleShareTool = async () => {
-		const shareData = {
-			title: 'CS2 Crosshair Config Generator',
-			text: 'Convert CS2 crosshair share codes into config files locally in your browser.',
-			url: window.location.href,
-		};
-
-		try {
-			if (navigator.share) {
-				await navigator.share(shareData);
-				return;
-			}
-
-			await copyToClipboard(window.location.href);
-			toast({
-				title: "Link copied!",
-				description: "Tool URL copied to clipboard",
-			});
-		} catch (error) {
-			if (error instanceof DOMException && error.name === 'AbortError') {
-				return;
-			}
-
-			toast({
-				title: "Share failed",
-				description: "Unable to share or copy the tool link.",
-				variant: "destructive",
-			});
-		}
-	};
 
 	const handleExampleCode = () => {
 		const randomExample = EXAMPLE_SHARE_CODES[Math.floor(Math.random() * EXAMPLE_SHARE_CODES.length)];
@@ -453,341 +319,86 @@ export const CS2ConfigGenerator = () => {
 	};
 
 	return (
-		<div className="w-full max-w-7xl mx-auto section-spacing">
-			{/* Header */}
-			<div className="text-center space-y-4 animate-[fade-in_0.5s_ease-out]">
-				<div className="flex items-center justify-center gap-3 mb-6">
-					<Crosshair className="w-8 h-8 text-neon-cyan animate-pulse" />
-					<h1 className="text-4xl md:text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-						CS2 Crosshair
-					</h1>
+		<div className="w-full max-w-4xl mx-auto space-y-6">
+			<div className="text-center space-y-3 animate-[fade-in_0.5s_ease-out]">
+				<div className="flex items-center justify-center gap-3">
+					<Crosshair className="w-7 h-7 text-neon-cyan" />
+					<h1 className="text-3xl md:text-4xl font-bold text-foreground">CS2 Crosshair</h1>
 				</div>
-				<p className="text-lg text-muted-foreground">
-					Convert share codes to config files instantly
-				</p>
-				<div className="text-sm text-neon-cyan font-mono">
-					delli.cc
-				</div>
-
-				{/* Trust Signals */}
-				<div className="flex flex-wrap items-center justify-center gap-3 mt-6">
-					<span className="trust-badge">
-						<Shield className="w-3 h-3" />
-						Safe & Secure
-					</span>
-					<span className="trust-badge">
-						<Check className="w-3 h-3" />
-						CS2 share-code support
-					</span>
-					<span className="trust-badge">
-						<Clock className="w-3 h-3" />
-						Instant generation
-					</span>
-				</div>
+				<p className="text-sm md:text-base text-muted-foreground">Paste a share code, copy the console command, and apply it in-game.</p>
 			</div>
 
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-				{/* Main Content - Left Side */}
-				<div className="lg:col-span-2 space-y-8">
-					{/* Main Tool */}
-					<Card className="card-gaming space-y-6 animate-[slide-in-up_0.5s_ease-out_0.1s_both]">
-						<div className="space-y-4">
-							<div className="flex items-center gap-2">
-								<label htmlFor="shareCode" className="text-lg font-semibold text-foreground">
-									Enter your CS2 share code
-								</label>
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<button className="help-trigger">
-												<HelpCircle className="w-3 h-3" />
-											</button>
-										</TooltipTrigger>
-										<TooltipContent side="right" className="max-w-xs">
-											<p className="text-sm">
-												A share code is generated in CS2 when you click the "Share or Import" button
-												in the crosshair settings. It looks like: <code className="text-neon-cyan">CSGO-XXXXX-XXXXX-XXXXX-XXXXX-XXXXX</code>
-											</p>
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
-							</div>
-
-							<div className="relative">
-								<Input
-									id="shareCode"
-									type="text"
-									placeholder="CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA"
-									value={shareCode}
-									onChange={(e) => setShareCode(e.target.value)}
-									className={`text-lg py-6 pr-12 bg-secondary/50 border-tactical-blue/30 focus:border-neon-cyan transition-all duration-300 ${validationState === 'valid' ? 'border-success' :
-										validationState === 'invalid' ? 'border-destructive' : ''
-										}`}
-								/>
-								{/* Validation Icon */}
-								{validationState !== 'idle' && (
-									<div className="absolute right-4 top-1/2 -translate-y-1/2">
-										{validationState === 'valid' ? (
-											<Check className="w-5 h-5 text-success" />
-										) : (
-											<AlertCircle className="w-5 h-5 text-destructive" />
-										)}
-									</div>
-								)}
-							</div>
-
-							{/* Error Message */}
-							{errorMessage && (
-								<div className="flex items-start gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-3">
-									<AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-									<span>{errorMessage}</span>
-								</div>
-							)}
-
-							{/* Quick Actions */}
-							<div className="flex flex-wrap gap-2">
-								<Button
-									onClick={handleExampleCode}
-									variant="tactical"
-									size="sm"
-									className="btn-gaming-press"
-								>
-									<Sparkles className="w-4 h-4" />
-									Try Example
-								</Button>
-								<Button
-									onClick={handlePasteFromClipboard}
-									variant="tactical"
-									size="sm"
-									className="btn-gaming-press"
-								>
-									<ClipboardPaste className="w-4 h-4" />
-									Paste
-								</Button>
-								<Button
-									onClick={handleToggleFavorite}
-									variant="tactical"
-									size="sm"
-									className="btn-gaming-press"
-									disabled={validationState !== 'valid'}
-									title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-								>
-									<Star className={`w-4 h-4 ${isFavorite ? 'fill-yellow-500 text-yellow-500' : ''}`} />
-									{isFavorite ? 'Favorited' : 'Favorite'}
-								</Button>
-								<Button
-									onClick={handleShareTool}
-									variant="tactical"
-									size="sm"
-									className="btn-gaming-press"
-								>
-									<Share2 className="w-4 h-4" />
-									Share
-								</Button>
-								<KeyboardShortcuts />
-							</div>
-						</div>
-
-						<div className="space-y-4">
-							<div className="flex items-center gap-2">
-								<label htmlFor="aliasName" className="text-lg font-semibold text-foreground">
-									Alias name (optional)
-								</label>
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<button className="help-trigger">
-												<HelpCircle className="w-3 h-3" />
-											</button>
-										</TooltipTrigger>
-										<TooltipContent side="right" className="max-w-xs">
-											<p className="text-sm">
-												Create a custom alias to quickly switch to this crosshair in-game.
-												For example, if you name it "aim", you can type "aim" in console to load it.
-											</p>
-										</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
-							</div>
-
-							<div className="space-y-2">
-								<Input
-									id="aliasName"
-									type="text"
-									placeholder="e.g., bluedynsmall"
-									value={aliasName}
-									onChange={(e) => setAliasName(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
-									className="text-lg py-6 bg-secondary/50 border-tactical-blue/30 focus:border-neon-cyan transition-all duration-300"
-								/>
-								{aliasName && (
-									<div className="flex items-center gap-2 bg-secondary/50 p-3 rounded-md border border-tactical-blue/20">
-										<code className="text-sm text-neon-cyan font-mono flex-1">
-											alias "{aliasName}" "exec crosshair_{aliasName}.cfg"
-										</code>
-										<Button onClick={handleCopyAlias} variant="tactical" size="sm" className="btn-gaming-press">
-											<Copy className="w-4 h-4" />
-										</Button>
-									</div>
-								)}
-							</div>
-						</div>
-
-						{/* Crosshair Preview with enhanced information */}
-						{shareCode && validationState === 'valid' && (
-							<div className="flex flex-col items-center space-y-4 animate-[fade-in_0.3s_ease-out]">
-								<h3 className="text-lg font-semibold text-neon-cyan">Crosshair Preview</h3>
-								<CrosshairPreview shareCode={shareCode} />
-								{(() => {
-									try {
-										const crosshair = decodeCrosshairShareCode(shareCode);
-										return (
-											<div className="w-full max-w-md bg-secondary/30 border border-tactical-blue/20 rounded-lg p-4 text-sm">
-												<h4 className="font-semibold text-neon-cyan mb-2">Crosshair Settings</h4>
-												<div className="grid grid-cols-2 gap-2 text-muted-foreground">
-													<div>Style: <span className="text-foreground">{crosshair.style}</span></div>
-													<div>Size: <span className="text-foreground">{crosshair.length}</span></div>
-													<div>Thickness: <span className="text-foreground">{crosshair.thickness}</span></div>
-													<div>Gap: <span className="text-foreground">{crosshair.gap}</span></div>
-													<div>Outline: <span className="text-foreground">{crosshair.outlineEnabled ? crosshair.outline : 'Off'}</span></div>
-													<div>Center Dot: <span className="text-foreground">{crosshair.centerDotEnabled ? 'On' : 'Off'}</span></div>
-													<div>Color: <span className="text-foreground">
-														{crosshair.color === 0 ? 'Red' :
-															crosshair.color === 1 ? 'Green' :
-																crosshair.color === 2 ? 'Yellow' :
-																	crosshair.color === 3 ? 'Blue' :
-																		crosshair.color === 4 ? 'Cyan' : 'Custom'}
-													</span></div>
-													<div>Alpha: <span className="text-foreground">{crosshair.alphaEnabled ? crosshair.alpha : 'Max'}</span></div>
-												</div>
-											</div>
-										);
-									} catch {
-										return null;
-									}
-								})()}
+			<Card className="card-gaming space-y-5 animate-[slide-in-up_0.5s_ease-out_0.1s_both]">
+				<div className="space-y-3">
+					<label htmlFor="shareCode" className="text-sm font-medium text-muted-foreground">Share code</label>
+					<div className="relative">
+						<Input
+							id="shareCode"
+							type="text"
+							placeholder="CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA"
+							value={shareCode}
+							onChange={(e) => setShareCode(e.target.value)}
+							className={`text-base py-5 pr-12 bg-secondary/50 border-tactical-blue/30 focus:border-neon-cyan transition-all duration-300 ${validationState === 'valid' ? 'border-success' : validationState === 'invalid' ? 'border-destructive' : ''}`}
+						/>
+						{validationState !== 'idle' && (
+							<div className="absolute right-4 top-1/2 -translate-y-1/2">
+								{validationState === 'valid' ? <Check className="w-5 h-5 text-success" /> : <AlertCircle className="w-5 h-5 text-destructive" />}
 							</div>
 						)}
+					</div>
 
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-							<Button
-								onClick={handleCopyConsoleCommand}
-								disabled={isGenerating || !shareCode.trim() || validationState !== 'valid'}
-								variant="gaming"
-								size="lg"
-								className="text-lg py-6 btn-gaming-press interactive-glow"
-							>
-								<ClipboardCopy className="w-5 h-5" />
-								Copy Console Command
-							</Button>
-							<Button
-								onClick={handleGenerate}
-								disabled={isGenerating || !shareCode.trim() || validationState !== 'valid'}
-								variant="outline"
-								size="lg"
-								className="text-lg py-6 btn-gaming-press border-neon-cyan/30 hover:bg-neon-cyan/10"
-							>
-								<Download className="w-5 h-5" />
-								{isGenerating ? 'Generating...' : 'Download Config'}
-							</Button>
+					{errorMessage && (
+						<div className="flex items-start gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-3">
+							<AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+							<span>{errorMessage}</span>
 						</div>
+					)}
 
-						{/* Keyboard Shortcut Hint */}
-						<p className="text-xs text-center text-muted-foreground">
-							Press <kbd className="px-2 py-1 bg-muted/50 rounded border border-muted">Ctrl</kbd> + <kbd className="px-2 py-1 bg-muted/50 rounded border border-muted">Enter</kbd> to copy the console command
-						</p>
-					</Card>
-
-					{/* Instructions */}
-					<Card className="p-6 md:p-8 space-y-4 bg-card/30 border-tactical-blue/20 animate-[slide-in-up_0.5s_ease-out_0.2s_both]">
-						<h3 className="text-lg font-semibold text-neon-cyan">How to use:</h3>
-						<ol className="space-y-3 text-muted-foreground">
-							<li className="flex items-start gap-3">
-								<span className="flex-shrink-0 w-6 h-6 bg-neon-cyan/20 text-neon-cyan rounded-full flex items-center justify-center text-sm font-bold">1</span>
-								<span>Copy your CS2 crosshair share code (Settings → Crosshair → Share or Import)</span>
-							</li>
-							<li className="flex items-start gap-3">
-								<span className="flex-shrink-0 w-6 h-6 bg-neon-cyan/20 text-neon-cyan rounded-full flex items-center justify-center text-sm font-bold">2</span>
-								<span>Paste it in the input field above or click "Try Example" to test</span>
-							</li>
-							<li className="flex items-start gap-3">
-								<span className="flex-shrink-0 w-6 h-6 bg-neon-cyan/20 text-neon-cyan rounded-full flex items-center justify-center text-sm font-bold">3</span>
-								<span>Click "Copy Console Command" to paste directly into the CS2 console, or download the config file instead</span>
-							</li>
-							<li className="flex items-start gap-3">
-								<span className="flex-shrink-0 w-6 h-6 bg-neon-cyan/20 text-neon-cyan rounded-full flex items-center justify-center text-sm font-bold">4</span>
-								<span>For downloaded files, place the .cfg file in your CS2 config folder</span>
-							</li>
-							<li className="flex items-start gap-3">
-								<span className="flex-shrink-0 w-6 h-6 bg-neon-cyan/20 text-neon-cyan rounded-full flex items-center justify-center text-sm font-bold">5</span>
-								<div className="space-y-2 flex-1">
-									<span>Config folder is probably located at:</span>
-									<div className="flex items-center gap-2 bg-secondary/50 p-3 rounded-md border border-tactical-blue/20">
-										<code className="text-xs sm:text-sm text-neon-cyan font-mono flex-1 break-all">
-											C:\Program Files (x86)\Steam\steamapps\common\Counter-Strike Global Offensive\game\csgo\cfg
-										</code>
-										<Button
-											onClick={handleCopyPath}
-											variant="tactical"
-											size="sm"
-											className="btn-gaming-press flex-shrink-0"
-										>
-											<Copy className="w-4 h-4" />
-										</Button>
-									</div>
-								</div>
-							</li>
-							<li className="flex items-start gap-3">
-								<span className="flex-shrink-0 w-6 h-6 bg-neon-cyan/20 text-neon-cyan rounded-full flex items-center justify-center text-sm font-bold">6</span>
-								<span>For the one-click command, paste it into the console (~) and press Enter. For downloaded files, type <code className="text-neon-cyan">exec crosshair.cfg</code>; if you used an alias, type the alias name instead.</span>
-							</li>
-						</ol>
-					</Card>
-
-					{/* SEO Content - Tips & Info */}
-					<Card className="p-6 md:p-8 space-y-4 bg-card/30 border-tactical-blue/20 animate-[slide-in-up_0.5s_ease-out_0.3s_both]">
-						<h3 className="text-lg font-semibold text-neon-cyan">Why use config files?</h3>
-						<div className="space-y-3 text-sm text-muted-foreground">
-							<p>
-								Config files allow you to save and quickly switch between different crosshair setups.
-								This is especially useful for players who use different crosshairs for different weapons or situations.
-							</p>
-							<p>
-								By creating aliases, you can instantly switch crosshairs with a simple console command during gameplay,
-								giving you maximum flexibility and control over your visual settings.
-							</p>
-							<div className="bg-secondary/30 border border-tactical-blue/20 rounded-lg p-4 mt-4">
-								<h4 className="font-semibold text-neon-cyan mb-2 text-base">Pro Tip</h4>
-								<p>
-									Add your crosshair configs to your <code className="text-neon-cyan">autoexec.cfg</code> to have them
-									automatically available every time you launch CS2. You can bind them to keys for instant switching!
-								</p>
-							</div>
-						</div>
-					</Card>
-
-					{/* FAQ Section */}
-					<FAQ />
-				</div>
-
-				{/* Sidebar - Right Side */}
-				<div className="lg:col-span-1">
-					<div className="sticky top-4 space-y-6">
-						<CrosshairHistory
-							key={historyKey}
-							onSelectCrosshair={handleSelectFromHistory}
-						/>
+					<div className="flex flex-wrap gap-2">
+						<Button onClick={handleExampleCode} variant="tactical" size="sm" className="btn-gaming-press">
+							<Sparkles className="w-4 h-4" />
+							Try Example
+						</Button>
+						<Button onClick={handlePasteFromClipboard} variant="tactical" size="sm" className="btn-gaming-press">
+							<ClipboardPaste className="w-4 h-4" />
+							Paste
+						</Button>
 					</div>
 				</div>
-			</div>
 
-			{/* Footer Info */}
-			<div className="text-center text-xs text-muted-foreground space-y-2 pt-4 animate-[fade-in_0.5s_ease-out_0.5s_both]">
-				<p>No data is stored or transmitted. All processing happens locally in your browser.</p>
-				<p className="flex items-center justify-center gap-2">
-					<Shield className="w-3 h-3" />
-					100% Privacy Guaranteed
+				<div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3">
+					<Button onClick={handleCopyConsoleCommand} disabled={isGenerating || !shareCode.trim() || validationState !== 'valid'} variant="gaming" size="lg" className="text-base md:text-lg py-6 btn-gaming-press interactive-glow">
+						<ClipboardCopy className="w-5 h-5" />
+						Copy Console Command
+					</Button>
+					<Button onClick={handleGenerate} disabled={isGenerating || !shareCode.trim() || validationState !== 'valid'} variant="outline" size="lg" className="py-6 btn-gaming-press border-neon-cyan/30 hover:bg-neon-cyan/10">
+						<Download className="w-5 h-5" />
+						{isGenerating ? 'Generating...' : 'Download'}
+					</Button>
+				</div>
+
+				<p className="text-xs text-center text-muted-foreground">
+					Press <kbd className="px-2 py-1 bg-muted/50 rounded border border-muted">Ctrl</kbd> + <kbd className="px-2 py-1 bg-muted/50 rounded border border-muted">Enter</kbd> to copy the console command.
 				</p>
-			</div>
+
+				{shareCode && validationState === 'valid' && (
+					<div className="flex flex-col items-center gap-3 border-t border-tactical-blue/20 pt-5 animate-[fade-in_0.3s_ease-out]">
+						<h2 className="text-sm font-medium text-muted-foreground">Preview</h2>
+						<CrosshairPreview shareCode={shareCode} />
+					</div>
+				)}
+			</Card>
+
+			<Card className="p-5 md:p-6 bg-card/30 border-tactical-blue/20 animate-[slide-in-up_0.5s_ease-out_0.2s_both]">
+				<h2 className="text-base font-semibold text-neon-cyan mb-3">Use it in CS2</h2>
+				<ol className="space-y-2 text-sm text-muted-foreground">
+					<li>1. Copy your crosshair share code from CS2.</li>
+					<li>2. Paste it here and copy the console command.</li>
+					<li>3. Open the CS2 console, paste the command, and press Enter.</li>
+				</ol>
+			</Card>
+
+			<p className="text-center text-xs text-muted-foreground">All processing happens locally in your browser.</p>
 		</div>
 	);
 };
