@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { decodeCrosshairShareCode, crosshairToConVars, InvalidShareCode, Invalid
 import { addToHistory } from '@/lib/storage';
 import { copyToClipboard } from '@/lib/clipboard';
 import { getCurrentShareUrl, getShareCodeFromUrl, getShareCodeUrlPath } from '@/lib/share-url';
+import { createAliasCommand, createConfigFileName, getSafeAliasCommandName } from '@/lib/crosshair-config';
 
 const EXAMPLE_SHARE_CODES = [
 	'CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA',
@@ -34,23 +35,9 @@ const getCrosshairConVars = (shareCode: string): string => {
 	}
 };
 
-const getSanitizedFileNameSegment = (value: string): string => value.trim().replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '');
-
-const createConfigFileName = (aliasName?: string): string => {
-	const sanitizedAliasName = aliasName ? getSanitizedFileNameSegment(aliasName) : '';
-
-	if (sanitizedAliasName) {
-		return `crosshair_${sanitizedAliasName}.cfg`;
-	}
-
-	const randomSuffix = Math.floor(10000 + Math.random() * 90000);
-	return `crosshair_${randomSuffix}.cfg`;
-};
-
 const generateConfig = (shareCode: string, fileName: string, aliasName?: string): string => {
 	const convars = getCrosshairConVars(shareCode);
-	const displayName = aliasName || 'mycrosshair';
-	const aliasCommand = `alias "${displayName}" "exec ${fileName}"`;
+	const aliasCommand = createAliasCommand(aliasName, fileName);
 
 	return `// CS2 Crosshair Config - Generated from ${shareCode}
 // Place this file in your CS2 config folder
@@ -106,6 +93,11 @@ export const CS2ConfigGenerator = () => {
 	const [errorMessage, setErrorMessage] = useState('');
 	const [historyKey, setHistoryKey] = useState(0);
 	const { toast } = useToast();
+	const trimmedAliasName = aliasName.trim();
+	const hasAliasName = Boolean(trimmedAliasName);
+	const previewFileName = useMemo(() => createConfigFileName(trimmedAliasName || undefined, 12345), [trimmedAliasName]);
+	const previewAliasName = useMemo(() => getSafeAliasCommandName(trimmedAliasName), [trimmedAliasName]);
+	const previewAliasCommand = useMemo(() => createAliasCommand(trimmedAliasName || undefined, previewFileName), [trimmedAliasName, previewFileName]);
 
 	useEffect(() => {
 		const urlShareCode = getShareCodeFromUrl({ pathname: location.pathname, search: location.search });
@@ -148,21 +140,8 @@ export const CS2ConfigGenerator = () => {
 		return () => clearTimeout(timeoutId);
 	}, [shareCode]);
 
-	useEffect(() => {
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-				e.preventDefault();
-				if (shareCode.trim() && validationState === 'valid') {
-					handleCopyConsoleCommand();
-				}
-			}
-		};
 
-		window.addEventListener('keydown', handleKeyDown);
-		return () => window.removeEventListener('keydown', handleKeyDown);
-	}, [shareCode, validationState]);
-
-	const addCrosshairToHistory = (code: string, alias?: string) => {
+	const addCrosshairToHistory = useCallback((code: string, alias?: string) => {
 		try {
 			const crosshair = decodeCrosshairShareCode(code);
 			addToHistory({
@@ -185,7 +164,7 @@ export const CS2ConfigGenerator = () => {
 		} catch (err) {
 			console.error('Failed to add to history:', err);
 		}
-	};
+	}, []);
 
 	const handleGenerate = async () => {
 		if (!shareCode.trim()) {
@@ -241,7 +220,21 @@ export const CS2ConfigGenerator = () => {
 			toast({ title: "Error", description: "Failed to copy share link. Please copy it from the address bar.", variant: "destructive" });
 		}
 	};
-	const handleCopyConsoleCommand = async () => {
+	const handleCopyAliasCommand = async () => {
+		if (!hasAliasName) {
+			toast({ title: "Alias required", description: "Enter an alias name before copying an alias command.", variant: "destructive" });
+			return;
+		}
+
+		try {
+			await copyToClipboard(previewAliasCommand);
+			toast({ title: "Alias command copied!", description: "Add this to autoexec.cfg, then type the alias name in the CS2 console." });
+		} catch (error) {
+			toast({ title: "Error", description: "Failed to copy alias command. Please copy it manually.", variant: "destructive" });
+		}
+	};
+
+	const handleCopyConsoleCommand = useCallback(async () => {
 		if (!shareCode.trim()) {
 			toast({ title: "Error", description: "Please enter a valid CS2 share code", variant: "destructive" });
 			return;
@@ -256,13 +249,26 @@ export const CS2ConfigGenerator = () => {
 		try {
 			const consoleCommand = generateConsoleCommand(shareCode);
 			await copyToClipboard(consoleCommand);
-			addCrosshairToHistory(shareCode, aliasName.trim() || undefined);
+			addCrosshairToHistory(shareCode, trimmedAliasName || undefined);
 			toast({ title: "Copied!", description: "Console command copied. Paste it into the CS2 console to apply this crosshair instantly." });
 		} catch (error) {
 			toast({ title: "Error", description: error instanceof Error ? error.message : "Failed to copy console command. Try downloading instead.", variant: "destructive" });
 		}
-	};
+	}, [addCrosshairToHistory, shareCode, toast, trimmedAliasName]);
 
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+				e.preventDefault();
+				if (shareCode.trim() && validationState === 'valid') {
+					handleCopyConsoleCommand();
+				}
+			}
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+		return () => window.removeEventListener('keydown', handleKeyDown);
+	}, [handleCopyConsoleCommand, shareCode, validationState]);
 	const handlePasteFromClipboard = async () => {
 		try {
 			if (!navigator.clipboard?.readText) {
@@ -290,8 +296,9 @@ export const CS2ConfigGenerator = () => {
 		toast({ title: "Example loaded!", description: "Try generating a config with this example" });
 	};
 
-	const handleSelectFromHistory = (historyShareCode: string) => {
+	const handleSelectFromHistory = (historyShareCode: string, historyAliasName?: string) => {
 		setShareCode(historyShareCode);
+		setAliasName(historyAliasName || '');
 		toast({ title: "Loaded", description: "Crosshair loaded from history" });
 	};
 
@@ -390,6 +397,21 @@ export const CS2ConfigGenerator = () => {
 										className="h-12 rounded-lg border-white/10 bg-background/70 font-mono text-sm shadow-inner transition-colors focus:border-primary"
 									/>
 									<p className="text-xs text-muted-foreground">Used for the config filename, history label, and generated CS2 alias command.</p>
+									<div className="space-y-2 rounded-lg border border-white/10 bg-background/45 p-3 text-xs">
+										<div className="flex items-center justify-between gap-3">
+											<span className="text-muted-foreground">Config file</span>
+											<code className="truncate text-foreground">{previewFileName}</code>
+										</div>
+										{hasAliasName && (
+											<>
+												<div className="flex items-center justify-between gap-3">
+													<span className="text-muted-foreground">Type in console</span>
+													<code className="truncate text-foreground">{previewAliasName}</code>
+												</div>
+												<code className="block truncate rounded border border-white/10 bg-background/70 px-2 py-1 text-muted-foreground">{previewAliasCommand}</code>
+											</>
+										)}
+									</div>
 								</div>
 								{validationState === 'valid' && (
 									<div className="rounded-lg border border-primary/30 bg-primary/10 p-3">
@@ -427,7 +449,7 @@ export const CS2ConfigGenerator = () => {
 								</div>
 							</div>
 
-							<div className="grid gap-3 lg:grid-cols-3">
+							<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 								<Button onClick={handleCopyConsoleCommand} disabled={!canSubmit} size="lg" className="h-14 rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90">
 									<ClipboardCopy className="h-5 w-5" />
 									Copy Command
@@ -435,6 +457,10 @@ export const CS2ConfigGenerator = () => {
 								<Button onClick={handleCopyShareLink} disabled={!canSubmit} variant="secondary" size="lg" className="h-14 rounded-lg border border-primary/30 bg-primary/10 text-foreground hover:bg-primary/15">
 									<Share2 className="h-5 w-5" />
 									Share Link
+								</Button>
+								<Button onClick={handleCopyAliasCommand} disabled={!canSubmit || !hasAliasName} variant="secondary" size="lg" className="h-14 rounded-lg border border-white/10 bg-white/[0.05] text-foreground hover:bg-white/[0.08]">
+									<ClipboardCopy className="h-5 w-5" />
+									Alias Cmd
 								</Button>
 								<Button onClick={handleGenerate} disabled={isGenerating || !canSubmit} variant="outline" size="lg" className="h-14 rounded-lg border-accent/40 bg-accent/10 text-foreground hover:bg-accent/15">
 									<Download className="h-5 w-5" />
@@ -461,8 +487,8 @@ export const CS2ConfigGenerator = () => {
 									</div>
 									<ol className="space-y-2 text-sm text-muted-foreground">
 										<li>1. Paste your share code and click Download.</li>
-										<li>2. Move the downloaded crosshair_alias.cfg or crosshair_12345.cfg file to your CS2 cfg folder.</li>
-										<li>3. Open the CS2 console, type the generated alias command or exec the downloaded file, and press Enter.</li>
+										<li>2. Move the displayed config file to your CS2 cfg folder.</li>
+										<li>3. Add the alias command to autoexec.cfg or exec the downloaded file directly.</li>
 									</ol>
 								</div>
 							</div>
@@ -493,7 +519,7 @@ export const CS2ConfigGenerator = () => {
 					<div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
 						<div className="rounded-lg border border-white/10 bg-card/55 p-4 backdrop-blur">
 							<p className="text-xs uppercase text-muted-foreground">Output</p>
-							<p className="mt-1 text-sm font-medium text-foreground">Console or .cfg</p>
+							<p className="mt-1 text-sm font-medium text-foreground">Link, alias, console, or .cfg</p>
 						</div>
 						<div className="rounded-lg border border-white/10 bg-card/55 p-4 backdrop-blur">
 							<p className="text-xs uppercase text-muted-foreground">Storage</p>
