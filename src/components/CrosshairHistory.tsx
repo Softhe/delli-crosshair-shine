@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Clock, Star, Trash2, Download, Copy } from 'lucide-react';
+import { Clock, Star, Trash2, Download, Copy, Share2 } from 'lucide-react';
 import { getHistory, getFavorites, removeFromHistory, toggleFavorite, isFavorited } from '@/lib/storage';
 import type { CrosshairData } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { copyToClipboard } from '@/lib/clipboard';
+import { getCurrentShareUrl } from '@/lib/share-url';
 
 interface CrosshairHistoryProps {
 	onSelectCrosshair: (shareCode: string, aliasName?: string) => void;
@@ -54,6 +55,21 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 		}
 	};
 
+	const handleCopyShareLink = async (shareCode: string) => {
+		try {
+			await copyToClipboard(getCurrentShareUrl(shareCode));
+			toast({
+				title: "Share link copied!",
+				description: "Anyone opening this link will load this crosshair automatically.",
+			});
+		} catch (error) {
+			toast({
+				title: "Error",
+				description: "Failed to copy share link. Please copy manually.",
+				variant: "destructive",
+			});
+		}
+	};
 	const handleCopyShareCode = async (shareCode: string) => {
 		try {
 			await copyToClipboard(shareCode);
@@ -91,7 +107,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 
 		return (
 			<div className="group relative bg-secondary/30 border border-tactical-blue/20 rounded-lg p-4 hover:bg-secondary/50 hover:border-neon-cyan/30 transition-all duration-200">
-				<div className="flex items-start justify-between gap-3">
+				<div className="relative z-10 flex items-start justify-between gap-3">
 					<div className="flex-1 min-w-0">
 						<div className="flex items-center gap-2 mb-2">
 							{item.aliasName && (
@@ -117,7 +133,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							</div>
 						)}
 					</div>
-					<div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+					<div className="relative z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
 						<Button
 							onClick={() => handleToggleFavorite(item)}
 							variant="ghost"
@@ -135,6 +151,15 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							title="Copy share code"
 						>
 							<Copy className="w-4 h-4" />
+						</Button>
+						<Button
+							onClick={() => handleCopyShareLink(item.shareCode)}
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8 text-primary hover:text-primary"
+							title="Copy share link"
+						>
+							<Share2 className="w-4 h-4" />
 						</Button>
 						<Button
 							onClick={() => onSelectCrosshair(item.shareCode, item.aliasName)}
@@ -161,7 +186,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 				<Button
 					onClick={() => onSelectCrosshair(item.shareCode, item.aliasName)}
 					variant="ghost"
-					className="absolute inset-0 w-full h-full opacity-0"
+					className="absolute inset-0 z-0 h-full w-full opacity-0"
 					aria-label="Load crosshair"
 				/>
 			</div>

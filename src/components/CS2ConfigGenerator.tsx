@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { CrosshairPreview } from './CrosshairPreview';
 import { CrosshairHistory } from './CrosshairHistory';
-import { AlertCircle, Check, ClipboardCopy, ClipboardPaste, Crosshair, Download, FileDown, ShieldCheck, Sparkles, TerminalSquare, Zap } from 'lucide-react';
+import { AlertCircle, Check, ClipboardCopy, ClipboardPaste, Crosshair, Download, FileDown, Link2, Share2, ShieldCheck, Sparkles, TerminalSquare, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { decodeCrosshairShareCode, crosshairToConVars, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
 import { addToHistory } from '@/lib/storage';
 import { copyToClipboard } from '@/lib/clipboard';
+import { getCurrentShareUrl, getShareCodeFromUrl, getShareCodeUrlPath } from '@/lib/share-url';
 
 const EXAMPLE_SHARE_CODES = [
 	'CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA',
@@ -82,31 +83,6 @@ const validateShareCode = (code: string): { valid: boolean; error?: string } => 
 	}
 };
 
-const decodeUrlShareCode = (value: string | null): string => {
-	if (!value) {
-		return '';
-	}
-
-	try {
-		return decodeURIComponent(value).trim();
-	} catch {
-		return value.trim();
-	}
-};
-
-const getShareCodeFromUrl = (location: { pathname: string; search: string }): string => {
-	const params = new URLSearchParams(location.search);
-	const queryCode = params.get('code') || params.get('crosshair');
-
-	if (queryCode) {
-		return decodeUrlShareCode(queryCode);
-	}
-
-	const pathCode = location.pathname.split('/').filter(Boolean)[0];
-	return decodeUrlShareCode(pathCode || null);
-};
-
-const getShareCodeUrlPath = (code: string): string => `/${encodeURIComponent(code)}`;
 
 export const CS2ConfigGenerator = () => {
 	const location = useLocation();
@@ -120,7 +96,7 @@ export const CS2ConfigGenerator = () => {
 	const { toast } = useToast();
 
 	useEffect(() => {
-		const urlShareCode = getShareCodeFromUrl(location);
+		const urlShareCode = getShareCodeFromUrl({ pathname: location.pathname, search: location.search });
 		setShareCode((currentShareCode) => currentShareCode === urlShareCode ? currentShareCode : urlShareCode);
 	}, [location.pathname, location.search]);
 
@@ -236,6 +212,22 @@ export const CS2ConfigGenerator = () => {
 		}
 	};
 
+	const handleCopyShareLink = async () => {
+		const trimmedShareCode = shareCode.trim();
+		const validation = validateShareCode(trimmedShareCode);
+
+		if (!validation.valid) {
+			toast({ title: "Invalid Share Code", description: validation.error, variant: "destructive" });
+			return;
+		}
+
+		try {
+			await copyToClipboard(getCurrentShareUrl(trimmedShareCode));
+			toast({ title: "Share link copied!", description: "Anyone opening this link will load this crosshair automatically." });
+		} catch (error) {
+			toast({ title: "Error", description: "Failed to copy share link. Please copy it from the address bar.", variant: "destructive" });
+		}
+	};
 	const handleCopyConsoleCommand = async () => {
 		if (!shareCode.trim()) {
 			toast({ title: "Error", description: "Please enter a valid CS2 share code", variant: "destructive" });
@@ -311,7 +303,7 @@ export const CS2ConfigGenerator = () => {
 		}
 	};
 
-	const canSubmit = shareCode.trim() && validationState === 'valid';
+	const canSubmit = Boolean(shareCode.trim() && validationState === 'valid');
 
 	return (
 		<div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
@@ -323,7 +315,7 @@ export const CS2ConfigGenerator = () => {
 					</div>
 					<div className="max-w-3xl space-y-3">
 						<h1 className="text-4xl font-semibold tracking-normal text-foreground md:text-6xl">CS2 Crosshair</h1>
-						<p className="text-base text-muted-foreground md:text-lg">Convert a CS2 share code into an instant console command or a clean downloadable config file.</p>
+						<p className="text-base text-muted-foreground md:text-lg">Convert a CS2 share code into a live preview, shareable URL, instant console command, or clean downloadable config file.</p>
 					</div>
 				</div>
 				<div className="grid grid-cols-3 gap-2 rounded-lg border border-white/10 bg-card/60 p-2 text-center shadow-2xl shadow-black/20 backdrop-blur">
@@ -349,7 +341,7 @@ export const CS2ConfigGenerator = () => {
 							<div className="flex items-center justify-between gap-3">
 								<div>
 									<h2 className="text-base font-semibold text-foreground">Generator</h2>
-									<p className="text-sm text-muted-foreground">Paste a valid CSGO share code to unlock actions.</p>
+									<p className="text-sm text-muted-foreground">Paste a valid CSGO share code to preview, apply, and share it instantly.</p>
 								</div>
 								<Crosshair className="h-5 w-5 text-primary" />
 							</div>
@@ -374,6 +366,23 @@ export const CS2ConfigGenerator = () => {
 									)}
 								</div>
 
+								{validationState === 'valid' && (
+									<div className="rounded-lg border border-primary/30 bg-primary/10 p-3">
+										<div className="mb-2 flex items-center justify-between gap-3">
+											<div className="flex items-center gap-2 text-sm font-medium text-primary">
+												<Link2 className="h-4 w-4" />
+												Live share URL
+											</div>
+											<Button onClick={handleCopyShareLink} variant="secondary" size="sm" className="h-8 border border-primary/20 bg-background/70">
+												<Share2 className="h-4 w-4" />
+												Copy
+											</Button>
+										</div>
+										<code className="block truncate rounded-md border border-white/10 bg-background/70 px-3 py-2 text-xs text-muted-foreground">
+											{getCurrentShareUrl(shareCode.trim())}
+										</code>
+									</div>
+								)}
 								{errorMessage && (
 									<div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
 										<AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
@@ -393,10 +402,14 @@ export const CS2ConfigGenerator = () => {
 								</div>
 							</div>
 
-							<div className="grid gap-3 sm:grid-cols-2">
+							<div className="grid gap-3 lg:grid-cols-3">
 								<Button onClick={handleCopyConsoleCommand} disabled={!canSubmit} size="lg" className="h-14 rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90">
 									<ClipboardCopy className="h-5 w-5" />
 									Copy Command
+								</Button>
+								<Button onClick={handleCopyShareLink} disabled={!canSubmit} variant="secondary" size="lg" className="h-14 rounded-lg border border-primary/30 bg-primary/10 text-foreground hover:bg-primary/15">
+									<Share2 className="h-5 w-5" />
+									Share Link
 								</Button>
 								<Button onClick={handleGenerate} disabled={isGenerating || !canSubmit} variant="outline" size="lg" className="h-14 rounded-lg border-accent/40 bg-accent/10 text-foreground hover:bg-accent/15">
 									<Download className="h-5 w-5" />
