@@ -34,9 +34,17 @@ const getCrosshairConVars = (shareCode: string): string => {
 	}
 };
 
-const generateConfig = (shareCode: string, aliasName?: string): string => {
+const createConfigFileName = (aliasName?: string): string => {
+	if (aliasName) {
+		return `crosshair_${aliasName}.cfg`;
+	}
+
+	const randomSuffix = Math.floor(10000 + Math.random() * 90000);
+	return `crosshair_${randomSuffix}.cfg`;
+};
+
+const generateConfig = (shareCode: string, fileName: string, aliasName?: string): string => {
 	const convars = getCrosshairConVars(shareCode);
-	const fileName = aliasName ? `crosshair_${aliasName}.cfg` : 'crosshair.cfg';
 	const displayName = aliasName || 'mycrosshair';
 	const aliasCommand = `alias "${displayName}" "exec ${fileName}"`;
 
@@ -190,12 +198,12 @@ export const CS2ConfigGenerator = () => {
 		setIsGenerating(true);
 
 		try {
-			const config = generateConfig(shareCode, aliasName);
+			const fileName = createConfigFileName(aliasName);
+			const config = generateConfig(shareCode, fileName, aliasName);
 			const blob = new Blob([config], { type: 'text/plain' });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
-			const fileName = aliasName ? `crosshair_${aliasName}.cfg` : 'crosshair.cfg';
 			a.download = fileName;
 			document.body.appendChild(a);
 			a.click();
@@ -436,8 +444,8 @@ export const CS2ConfigGenerator = () => {
 									</div>
 									<ol className="space-y-2 text-sm text-muted-foreground">
 										<li>1. Paste your share code and click Download.</li>
-										<li>2. Move crosshair.cfg to your CS2 cfg folder.</li>
-										<li>3. Open the CS2 console, type exec crosshair.cfg, and press Enter.</li>
+										<li>2. Move the downloaded crosshair_12345.cfg file to your CS2 cfg folder.</li>
+										<li>3. Open the CS2 console, type exec crosshair_12345.cfg, and press Enter.</li>
 									</ol>
 								</div>
 							</div>
