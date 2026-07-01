@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { decodeCrosshairShareCode, type Crosshair, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
+import { decodeCrosshairShareCode, getCrosshairPreviewColor, type Crosshair, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
 import { Monitor, Palette } from 'lucide-react';
 
 interface CrosshairPreviewProps {
@@ -100,20 +100,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 		);
 	}
 
-	// CS2 color mapping - accurate colors based on game
-	const getCS2Color = (colorIndex: number, red: number, green: number, blue: number) => {
-		switch (colorIndex) {
-			case 0: return { r: 255, g: 0, b: 0 };      // Red
-			case 1: return { r: 0, g: 255, b: 0 };      // Green
-			case 2: return { r: 255, g: 255, b: 0 };    // Yellow
-			case 3: return { r: 0, g: 0, b: 255 };      // Blue
-			case 4: return { r: 245, g: 255, b: 255 };  // CS2 cyan reads near-white in-game
-			case 5: return { r: red, g: green, b: blue }; // Custom
-			default: return { r: 0, g: 255, b: 255 };   // Default to cyan
-		}
-	};
-
-	const color = getCS2Color(crosshair.color, crosshair.red, crosshair.green, crosshair.blue);
+	const color = getCrosshairPreviewColor(crosshair);
 	const crosshairColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
 	const alpha = crosshair.alphaEnabled ? crosshair.alpha / 255 : 1;
 

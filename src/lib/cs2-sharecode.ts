@@ -38,6 +38,30 @@ export interface Crosshair {
   style: number;
 }
 
+export interface RGBColor {
+  r: number;
+  g: number;
+  b: number;
+}
+
+export function getCrosshairPreviewColor(crosshair: Pick<Crosshair, 'color' | 'red' | 'green' | 'blue'>): RGBColor {
+  switch (crosshair.color) {
+    case 0:
+      return { r: 255, g: 0, b: 0 };
+    case 1:
+      return { r: 0, g: 255, b: 0 };
+    case 2:
+      return { r: 255, g: 165, b: 0 };
+    case 3:
+      return { r: 0, g: 0, b: 255 };
+    case 4:
+      return { r: 0, g: 255, b: 255 };
+    case 5:
+      return { r: crosshair.red, g: crosshair.green, b: crosshair.blue };
+    default:
+      return { r: 0, g: 255, b: 255 };
+  }
+}
 export class InvalidShareCode extends Error {
   public constructor() {
     super('Invalid share code');
