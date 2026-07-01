@@ -34,9 +34,13 @@ const getCrosshairConVars = (shareCode: string): string => {
 	}
 };
 
+const getSanitizedFileNameSegment = (value: string): string => value.trim().replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '');
+
 const createConfigFileName = (aliasName?: string): string => {
-	if (aliasName) {
-		return `crosshair_${aliasName}.cfg`;
+	const sanitizedAliasName = aliasName ? getSanitizedFileNameSegment(aliasName) : '';
+
+	if (sanitizedAliasName) {
+		return `crosshair_${sanitizedAliasName}.cfg`;
 	}
 
 	const randomSuffix = Math.floor(10000 + Math.random() * 90000);
@@ -97,7 +101,7 @@ export const CS2ConfigGenerator = () => {
 	const navigate = useNavigate();
 	const [shareCode, setShareCode] = useState(() => getShareCodeFromUrl(location));
 	const [isGenerating, setIsGenerating] = useState(false);
-	const aliasName = '';
+	const [aliasName, setAliasName] = useState('');
 	const [validationState, setValidationState] = useState<'idle' | 'valid' | 'invalid'>('idle');
 	const [errorMessage, setErrorMessage] = useState('');
 	const [historyKey, setHistoryKey] = useState(0);
@@ -198,8 +202,9 @@ export const CS2ConfigGenerator = () => {
 		setIsGenerating(true);
 
 		try {
-			const fileName = createConfigFileName(aliasName);
-			const config = generateConfig(shareCode, fileName, aliasName);
+			const trimmedAliasName = aliasName.trim();
+			const fileName = createConfigFileName(trimmedAliasName);
+			const config = generateConfig(shareCode, fileName, trimmedAliasName || undefined);
 			const blob = new Blob([config], { type: 'text/plain' });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
@@ -210,7 +215,7 @@ export const CS2ConfigGenerator = () => {
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
 
-			addCrosshairToHistory(shareCode, aliasName);
+			addCrosshairToHistory(shareCode, aliasName.trim() || undefined);
 			toast({ title: "Success!", description: `${fileName} downloaded successfully` });
 			playSuccessSound();
 		} catch (error) {
@@ -251,7 +256,7 @@ export const CS2ConfigGenerator = () => {
 		try {
 			const consoleCommand = generateConsoleCommand(shareCode);
 			await copyToClipboard(consoleCommand);
-			addCrosshairToHistory(shareCode, aliasName);
+			addCrosshairToHistory(shareCode, aliasName.trim() || undefined);
 			toast({ title: "Copied!", description: "Console command copied. Paste it into the CS2 console to apply this crosshair instantly." });
 		} catch (error) {
 			toast({ title: "Error", description: error instanceof Error ? error.message : "Failed to copy console command. Try downloading instead.", variant: "destructive" });
@@ -349,7 +354,7 @@ export const CS2ConfigGenerator = () => {
 							<div className="flex items-center justify-between gap-3">
 								<div>
 									<h2 className="text-base font-semibold text-foreground">Generator</h2>
-									<p className="text-sm text-muted-foreground">Paste a valid CSGO share code to preview, apply, and share it instantly.</p>
+									<p className="text-sm text-muted-foreground">Paste a valid CSGO share code, optionally name it with an alias, then preview, apply, and share it instantly.</p>
 								</div>
 								<Crosshair className="h-5 w-5 text-primary" />
 							</div>
@@ -374,6 +379,18 @@ export const CS2ConfigGenerator = () => {
 									)}
 								</div>
 
+								<div className="space-y-2">
+									<label htmlFor="aliasName" className="text-sm font-medium text-foreground">Alias name</label>
+									<Input
+										id="aliasName"
+										type="text"
+										placeholder="og small"
+										value={aliasName}
+										onChange={(e) => setAliasName(e.target.value)}
+										className="h-12 rounded-lg border-white/10 bg-background/70 font-mono text-sm shadow-inner transition-colors focus:border-primary"
+									/>
+									<p className="text-xs text-muted-foreground">Used for the config filename, history label, and generated CS2 alias command.</p>
+								</div>
 								{validationState === 'valid' && (
 									<div className="rounded-lg border border-primary/30 bg-primary/10 p-3">
 										<div className="mb-2 flex items-center justify-between gap-3">
@@ -444,8 +461,8 @@ export const CS2ConfigGenerator = () => {
 									</div>
 									<ol className="space-y-2 text-sm text-muted-foreground">
 										<li>1. Paste your share code and click Download.</li>
-										<li>2. Move the downloaded crosshair_12345.cfg file to your CS2 cfg folder.</li>
-										<li>3. Open the CS2 console, type exec crosshair_12345.cfg, and press Enter.</li>
+										<li>2. Move the downloaded crosshair_alias.cfg or crosshair_12345.cfg file to your CS2 cfg folder.</li>
+										<li>3. Open the CS2 console, type the generated alias command or exec the downloaded file, and press Enter.</li>
 									</ol>
 								</div>
 							</div>
