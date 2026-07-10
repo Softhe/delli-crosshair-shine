@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Check, ClipboardCopy, Crosshair as CrosshairIcon, RotateCcw, SlidersHorizontal, TerminalSquare, Wand2 } from 'lucide-react';
+import { ArrowLeft, Check, ClipboardCopy, Crosshair as CrosshairIcon, ExternalLink, RotateCcw, SlidersHorizontal, TerminalSquare, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,6 +11,8 @@ import { copyToClipboard } from '@/lib/clipboard';
 import { crosshairToConVars, decodeCrosshairShareCode, encodeCrosshair, getCrosshairPreviewColor, InvalidCrosshairShareCode, InvalidShareCode, type Crosshair } from '@/lib/cs2-sharecode';
 import { CrosshairShape } from '@/components/CrosshairShape';
 import { clampCrosshair } from '@/lib/crosshair-preview';
+import { clearCustomCrosshair, loadCustomCrosshair, saveCustomCrosshair } from '@/lib/custom-crosshair-storage';
+import { getShareCodeUrlPath } from '@/lib/share-url';
 
 const DEFAULT_CROSSHAIR: Crosshair = {
 	length: 2,
@@ -113,12 +115,12 @@ interface SettingSliderProps {
 const SettingSlider = ({ label, value, min, max, step, disabled, onChange }: SettingSliderProps) => (
 	<div className={disabled ? 'space-y-2 opacity-45' : 'space-y-2'}>
 		<div className="flex items-center justify-between gap-3">
-			<label className="text-sm font-medium text-foreground">{label}</label>
+			<span className="text-sm font-medium text-foreground">{label}</span>
 			<span className="rounded border border-white/10 bg-background/70 px-2 py-1 font-mono text-xs text-muted-foreground">
 				{value.toFixed(step < 1 ? 1 : 0)}
 			</span>
 		</div>
-		<Slider value={[value]} min={min} max={max} step={step} disabled={disabled} onValueChange={([next]) => onChange(next)} />
+		<Slider thumbLabel={label} value={[value]} min={min} max={max} step={step} disabled={disabled} onValueChange={([next]) => onChange(next)} />
 	</div>
 );
 
@@ -136,7 +138,7 @@ const SettingToggle = ({ label, checked, onChange }: SettingToggleProps) => (
 );
 
 const CustomCrosshair = () => {
-	const [crosshair, setCrosshair] = useState<Crosshair>(DEFAULT_CROSSHAIR);
+	const [crosshair, setCrosshair] = useState<Crosshair>(() => loadCustomCrosshair(DEFAULT_CROSSHAIR));
 	const [importCode, setImportCode] = useState('');
 	const [importError, setImportError] = useState('');
 	const { toast } = useToast();
@@ -148,6 +150,17 @@ const CustomCrosshair = () => {
 	const updateNumber = (key: NumberKey, value: number) => setCrosshair((current) => clampCrosshair({ ...current, [key]: value }));
 	const updateBoolean = (key: BooleanKey, value: boolean) => setCrosshair((current) => clampCrosshair({ ...current, [key]: value }));
 	const updateRgb = (key: 'red' | 'green' | 'blue', value: number) => updateNumber(key, Math.min(255, Math.max(0, Number.isFinite(value) ? value : 0)));
+
+	useEffect(() => {
+		saveCustomCrosshair(crosshair);
+	}, [crosshair]);
+
+	const handleReset = () => {
+		clearCustomCrosshair();
+		setCrosshair(DEFAULT_CROSSHAIR);
+		setImportCode('');
+		setImportError('');
+	};
 
 	const handleCopy = async (value: string, title: string) => {
 		try {
@@ -198,7 +211,7 @@ const CustomCrosshair = () => {
 							</p>
 						</div>
 					</div>
-					<Button onClick={() => updateCrosshair(DEFAULT_CROSSHAIR)} variant="outline" className="border-white/10 bg-white/[0.04]">
+					<Button onClick={handleReset} variant="outline" className="border-white/10 bg-white/[0.04]">
 						<RotateCcw className="h-4 w-4" />
 						Reset
 					</Button>
@@ -238,6 +251,9 @@ const CustomCrosshair = () => {
 								<div className="mb-3 text-sm font-semibold text-foreground">Import share code</div>
 								<div className="flex gap-2">
 									<Input
+										aria-label="CS2 crosshair share code"
+										aria-invalid={Boolean(importError)}
+										aria-describedby={importError ? 'import-code-error' : undefined}
 										value={importCode}
 										onChange={(event) => {
 											setImportCode(event.target.value);
@@ -248,7 +264,7 @@ const CustomCrosshair = () => {
 									/>
 									<Button onClick={handleImport} variant="secondary" className="border border-primary/25 bg-primary/10 text-foreground hover:bg-primary/15">Import</Button>
 								</div>
-								{importError && <p className="mt-2 text-xs text-destructive">{importError}</p>}
+								{importError && <p id="import-code-error" role="alert" className="mt-2 text-xs text-destructive">{importError}</p>}
 							</div>
 						</div>
 
@@ -267,6 +283,8 @@ const CustomCrosshair = () => {
 										{COLOR_OPTIONS.map((option) => (
 											<button
 												key={option.value}
+												type="button"
+												aria-pressed={crosshair.color === option.value}
 												onClick={() => updateNumber('color', option.value)}
 												className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${crosshair.color === option.value ? 'border-primary bg-primary/15 text-foreground shadow-[0_0_0_1px_hsl(var(--primary)/0.25)]' : 'border-white/10 bg-background/45 text-muted-foreground hover:bg-white/[0.06]'}`}
 											>
@@ -287,16 +305,16 @@ const CustomCrosshair = () => {
 
 								<div className="grid grid-cols-3 gap-3">
 									<div className="space-y-2">
-										<label className="text-xs text-muted-foreground">Red</label>
-										<Input type="number" min={0} max={255} value={crosshair.red} disabled={crosshair.color !== 5} onChange={(event) => updateRgb('red', Number(event.target.value))} className="h-10 border-white/10 bg-background/70" />
+										<label htmlFor="custom-red" className="text-xs text-muted-foreground">Red</label>
+										<Input id="custom-red" type="number" min={0} max={255} value={crosshair.red} disabled={crosshair.color !== 5} onChange={(event) => updateRgb('red', Number(event.target.value))} className="h-10 border-white/10 bg-background/70" />
 									</div>
 									<div className="space-y-2">
-										<label className="text-xs text-muted-foreground">Green</label>
-										<Input type="number" min={0} max={255} value={crosshair.green} disabled={crosshair.color !== 5} onChange={(event) => updateRgb('green', Number(event.target.value))} className="h-10 border-white/10 bg-background/70" />
+										<label htmlFor="custom-green" className="text-xs text-muted-foreground">Green</label>
+										<Input id="custom-green" type="number" min={0} max={255} value={crosshair.green} disabled={crosshair.color !== 5} onChange={(event) => updateRgb('green', Number(event.target.value))} className="h-10 border-white/10 bg-background/70" />
 									</div>
 									<div className="space-y-2">
-										<label className="text-xs text-muted-foreground">Blue</label>
-										<Input type="number" min={0} max={255} value={crosshair.blue} disabled={crosshair.color !== 5} onChange={(event) => updateRgb('blue', Number(event.target.value))} className="h-10 border-white/10 bg-background/70" />
+										<label htmlFor="custom-blue" className="text-xs text-muted-foreground">Blue</label>
+										<Input id="custom-blue" type="number" min={0} max={255} value={crosshair.blue} disabled={crosshair.color !== 5} onChange={(event) => updateRgb('blue', Number(event.target.value))} className="h-10 border-white/10 bg-background/70" />
 									</div>
 								</div>
 
@@ -350,6 +368,12 @@ const CustomCrosshair = () => {
 									<Button onClick={() => handleCopy(convars.replace(/\n/g, '; '), 'Console command copied')} variant="secondary" className="border border-white/10 bg-white/[0.05]">
 										<ClipboardCopy className="h-4 w-4" />
 										Command
+									</Button>
+									<Button asChild variant="outline" className="sm:col-span-2 border-white/10 bg-white/[0.03]">
+										<Link to={getShareCodeUrlPath(shareCode)}>
+											<ExternalLink className="h-4 w-4" />
+											Open in converter
+										</Link>
 									</Button>
 								</div>
 								<details className="rounded-lg border border-white/10 bg-background/45">
