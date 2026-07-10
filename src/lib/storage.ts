@@ -35,7 +35,7 @@ interface StorageExportData {
 	exportDate?: string;
 	history: CrosshairData[];
 	favorites: CrosshairData[];
-	settings?: Record<string, any>;
+	settings?: Record<string, unknown>;
 }
 
 // Generate unique ID for crosshair
@@ -60,18 +60,19 @@ const normalizeCrosshairData = (items: unknown, isFavorite = false): CrosshairDa
 		}));
 };
 
-const migrateStorageData = (data: any): StorageExportData => {
-	const version = typeof data?.version === 'string' ? data.version : '1.0';
+const migrateStorageData = (data: unknown): StorageExportData => {
+	const storageData = data && typeof data === 'object' ? data as Partial<StorageExportData> : {};
+	const version = typeof storageData.version === 'string' ? storageData.version : '1.0';
 
 	switch (version) {
 		case '1.0':
 		case '2.0':
 			return {
 				version: CURRENT_STORAGE_VERSION,
-				exportDate: typeof data?.exportDate === 'string' ? data.exportDate : undefined,
-				history: normalizeCrosshairData(data?.history).slice(0, MAX_HISTORY_ITEMS),
-				favorites: normalizeCrosshairData(data?.favorites, true).slice(0, MAX_FAVORITE_ITEMS),
-				settings: typeof data?.settings === 'object' && data.settings !== null ? data.settings : {},
+				exportDate: typeof storageData.exportDate === 'string' ? storageData.exportDate : undefined,
+				history: normalizeCrosshairData(storageData.history).slice(0, MAX_HISTORY_ITEMS),
+				favorites: normalizeCrosshairData(storageData.favorites, true).slice(0, MAX_FAVORITE_ITEMS),
+				settings: typeof storageData.settings === 'object' && storageData.settings !== null ? storageData.settings : {},
 			};
 		default:
 			throw new Error(`Unsupported storage version: ${version}`);
@@ -255,7 +256,7 @@ export const importAllData = (jsonString: string): { success: boolean; error?: s
 };
 
 // Get user settings
-export const getUserSettings = (): Record<string, any> => {
+export const getUserSettings = (): Record<string, unknown> => {
 	try {
 		const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
 		return data ? JSON.parse(data) : {};
@@ -266,7 +267,7 @@ export const getUserSettings = (): Record<string, any> => {
 };
 
 // Save user settings
-export const saveUserSettings = (settings: Record<string, any>): void => {
+export const saveUserSettings = (settings: Record<string, unknown>): void => {
 	try {
 		const currentSettings = getUserSettings();
 		const updatedSettings = { ...currentSettings, ...settings };

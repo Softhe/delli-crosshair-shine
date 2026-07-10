@@ -1,12 +1,39 @@
-import { useEffect, useState } from 'react';
-import { decodeCrosshairShareCode, getCrosshairPreviewColor, type Crosshair, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
-import { Monitor, Palette } from 'lucide-react';
+import { type ReactNode, useEffect, useState } from 'react';
+import { decodeCrosshairShareCode, type Crosshair, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
+import { AlertCircle, Monitor, Palette } from 'lucide-react';
+import { CrosshairShape } from './CrosshairShape';
+import { getCrosshairPreviewMetrics } from '@/lib/crosshair-preview';
 
 interface CrosshairPreviewProps {
 	shareCode: string;
 }
 
 type BackgroundType = 'dust2' | 'mirage' | 'inferno' | 'dark' | 'light';
+
+const backgroundOptions: Array<{ value: BackgroundType; label: string }> = [
+	{ value: 'dust2', label: 'Dust2' },
+	{ value: 'mirage', label: 'Mirage' },
+	{ value: 'inferno', label: 'Inferno' },
+	{ value: 'dark', label: 'Dark' },
+	{ value: 'light', label: 'Light' }
+];
+
+const previewPanelClassName = 'w-72 h-72 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg';
+
+const DisabledPreviewControls = ({ animated = false }: { animated?: boolean }) => (
+	<div className="flex flex-wrap items-center justify-center gap-2 p-3 bg-card/30 border border-tactical-blue/20 rounded-lg opacity-50">
+		<div className={`h-8 bg-secondary/50 rounded w-24 ${animated ? 'animate-pulse' : ''}`} />
+		<div className={`h-8 bg-secondary/50 rounded w-16 ${animated ? 'animate-pulse' : ''}`} />
+		<div className={`h-8 bg-secondary/50 rounded w-20 ${animated ? 'animate-pulse' : ''}`} />
+	</div>
+);
+
+const EmptyPreviewState = ({ children }: { children: ReactNode }) => (
+	<div className="space-y-4">
+		<DisabledPreviewControls />
+		<div className={previewPanelClassName}>{children}</div>
+	</div>
+);
 
 export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 	const [crosshair, setCrosshair] = useState<Crosshair | null>(null);
@@ -49,12 +76,8 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 	if (isLoading) {
 		return (
 			<div className="space-y-4">
-				<div className="flex flex-wrap items-center justify-center gap-2 p-3 bg-card/30 border border-tactical-blue/20 rounded-lg opacity-50">
-					<div className="h-8 bg-secondary/50 rounded animate-pulse w-24"></div>
-					<div className="h-8 bg-secondary/50 rounded animate-pulse w-16"></div>
-					<div className="h-8 bg-secondary/50 rounded animate-pulse w-20"></div>
-				</div>
-				<div className="w-72 h-72 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg">
+				<DisabledPreviewControls animated />
+				<div className={previewPanelClassName}>
 					<div className="flex flex-col items-center gap-2">
 						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neon-cyan"></div>
 						<div className="text-muted-foreground text-sm">Loading crosshair...</div>
@@ -66,63 +89,27 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 
 	if (error) {
 		return (
-			<div className="space-y-4">
-				<div className="flex flex-wrap items-center justify-center gap-2 p-3 bg-card/30 border border-tactical-blue/20 rounded-lg opacity-50">
-					<div className="h-8 bg-secondary/50 rounded w-24"></div>
-					<div className="h-8 bg-secondary/50 rounded w-16"></div>
-					<div className="h-8 bg-secondary/50 rounded w-20"></div>
+			<EmptyPreviewState>
+				<div className="text-destructive text-sm text-center px-4">
+					<AlertCircle className="mx-auto mb-2 h-5 w-5" />
+					{error}
 				</div>
-				<div className="w-72 h-72 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg">
-					<div className="text-destructive text-sm text-center px-4">
-						<div className="mb-2">⚠️</div>
-						{error}
-					</div>
-				</div>
-			</div>
+			</EmptyPreviewState>
 		);
 	}
 
 	if (!crosshair) {
 		return (
-			<div className="space-y-4">
-				<div className="flex flex-wrap items-center justify-center gap-2 p-3 bg-card/30 border border-tactical-blue/20 rounded-lg opacity-50">
-					<div className="h-8 bg-secondary/50 rounded w-24"></div>
-					<div className="h-8 bg-secondary/50 rounded w-16"></div>
-					<div className="h-8 bg-secondary/50 rounded w-20"></div>
+			<EmptyPreviewState>
+				<div className="text-muted-foreground text-sm text-center">
+					<Monitor className="w-8 h-8 mx-auto mb-2 opacity-50" />
+					Enter a CS2 share code to preview
 				</div>
-				<div className="w-72 h-72 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg">
-					<div className="text-muted-foreground text-sm text-center">
-						<Monitor className="w-8 h-8 mx-auto mb-2 opacity-50" />
-						Enter a CS2 share code to preview
-					</div>
-				</div>
-			</div>
+			</EmptyPreviewState>
 		);
 	}
 
-	const color = getCrosshairPreviewColor(crosshair);
-	const crosshairColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
-	const alpha = crosshair.alphaEnabled ? crosshair.alpha / 255 : 1;
-
-
-	const gameLengthPx = crosshair.length * 10;
-	const gameThicknessPx = Math.max(1, crosshair.thickness * 2);
-	const gameGapPx = crosshair.gap + 4;
-
-	const naturalLength = Math.max(1, gameLengthPx);
-	const naturalThickness = Math.max(1, gameThicknessPx);
-	const naturalEdgeGap = gameGapPx;
-	const naturalSpan = Math.max(naturalLength * 2 + Math.max(0, naturalEdgeGap) * 2, naturalThickness);
-	const autoScale = Math.min(6, Math.max(1, 34 / naturalSpan, 2 / naturalThickness));
-
-	const length = naturalLength * autoScale;
-	const thickness = naturalThickness * autoScale;
-	const edgeGap = naturalEdgeGap * autoScale;
-	const fromCenter = (offset: number) => `calc(50% ${offset < 0 ? '-' : '+'} ${Math.abs(offset)}px)`;
-	const beforeCenter = (offset: number) => `calc(50% ${offset < 0 ? '+' : '-'} ${Math.abs(offset)}px)`;
-
-	const outlineThickness = crosshair.outlineEnabled ?
-		Math.max(0.5, crosshair.outline * autoScale) : 0;
+	const { autoScale } = getCrosshairPreviewMetrics(crosshair);
 
 	// Background variations
 	const getBackgroundStyle = (type: BackgroundType) => {
@@ -172,20 +159,6 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 
 	const backgroundStyle = getBackgroundStyle(backgroundType);
 
-
-	// Enhanced line styling with proper outline support (reverted)
-	const lineStyle = {
-		backgroundColor: crosshairColor,
-		opacity: alpha,
-		position: 'absolute' as const,
-		zIndex: 10,
-		borderRadius: '0.5px',
-		// Proper outline implementation
-		...(outlineThickness > 0 && {
-			boxShadow: `0 0 0 ${outlineThickness}px rgba(0, 0, 0, 0.8)`
-		})
-	};
-
 	return (
 		<div className="space-y-4">
 			{/* Control Panel */}
@@ -203,11 +176,9 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 						onChange={(e) => setBackgroundType(e.target.value as BackgroundType)}
 						className="text-xs bg-secondary/50 border border-tactical-blue/30 rounded px-2 py-1 text-foreground"
 					>
-						<option value="dust2">Dust2</option>
-						<option value="mirage">Mirage</option>
-						<option value="inferno">Inferno</option>
-						<option value="dark">Dark</option>
-						<option value="light">Light</option>
+						{backgroundOptions.map((option) => (
+							<option key={option.value} value={option.value}>{option.label}</option>
+						))}
 					</select>
 				</div>
 			</div>
@@ -240,74 +211,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 
 				{/* Crosshair container */}
 				<div className="relative w-full h-full flex items-center justify-center">
-
-					{/* Center dot with reverted outline */}
-					{crosshair.centerDotEnabled && (
-						<div
-							style={{
-								...lineStyle,
-								width: `${thickness}px`,
-								height: `${thickness}px`,
-								borderRadius: '50%',
-								left: '50%',
-								top: '50%',
-								transform: 'translate(-50%, -50%)',
-								zIndex: 20
-							}}
-						/>
-					)}
-
-					{/* Horizontal lines with improved positioning - always show if calculated length > 0 */}
-					<>
-						{/* Left line */}
-						<div
-							style={{
-								...lineStyle,
-								width: `${length}px`,
-								height: `${thickness}px`,
-								left: beforeCenter(edgeGap + length),
-								top: '50%',
-								transform: 'translateY(-50%)'
-							}}
-						/>
-						{/* Right line */}
-						<div
-							style={{
-								...lineStyle,
-								width: `${length}px`,
-								height: `${thickness}px`,
-								left: fromCenter(edgeGap),
-								top: '50%',
-								transform: 'translateY(-50%)'
-							}}
-						/>
-					</>
-
-					{/* Vertical lines with improved positioning - always show if calculated length > 0 */}
-					<>
-						{/* Top line */}
-						<div
-							style={{
-								...lineStyle,
-								width: `${thickness}px`,
-								height: `${length}px`,
-								left: '50%',
-								top: beforeCenter(edgeGap + length),
-								transform: 'translateX(-50%)'
-							}}
-						/>
-						{/* Bottom line */}
-						<div
-							style={{
-								...lineStyle,
-								width: `${thickness}px`,
-								height: `${length}px`,
-								left: '50%',
-								top: fromCenter(edgeGap),
-								transform: 'translateX(-50%)'
-							}}
-						/>
-					</>
+					<CrosshairShape crosshair={crosshair} />
 				</div>
 			</div>
 		</div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -7,81 +7,18 @@ import { CrosshairPreview } from './CrosshairPreview';
 import { CrosshairHistory } from './CrosshairHistory';
 import { AlertCircle, Check, ClipboardCopy, ClipboardPaste, Crosshair, Download, FileDown, Link2, Share2, ShieldCheck, Sparkles, TerminalSquare, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { decodeCrosshairShareCode, crosshairToConVars, InvalidShareCode, InvalidCrosshairShareCode } from '@/lib/cs2-sharecode';
+import { decodeCrosshairShareCode } from '@/lib/cs2-sharecode';
 import { addToHistory } from '@/lib/storage';
 import { copyToClipboard } from '@/lib/clipboard';
 import { getCurrentShareUrl, getShareCodeFromUrl, getShareCodeUrlPath } from '@/lib/share-url';
 import { createAliasCommand, createConfigFileName, getSafeAliasCommandName } from '@/lib/crosshair-config';
+import { generateConfig, generateConsoleCommand, validateShareCode } from '@/lib/crosshair-output';
 
 const EXAMPLE_SHARE_CODES = [
 	'CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA',
 	'CSGO-RBZih-6Hynp-ieuGe-tTkVz-9PqNO',
 	'CSGO-sXMJy-i8zaz-T4jvf-G8Ay7-b2D7K'
 ];
-
-const getCrosshairConVars = (shareCode: string): string => {
-	if (!shareCode || !shareCode.startsWith('CSGO-')) {
-		throw new Error('Share code must start with "CSGO-"');
-	}
-
-	try {
-		const crosshair = decodeCrosshairShareCode(shareCode);
-		return crosshairToConVars(crosshair);
-	} catch (error) {
-		if (error instanceof InvalidShareCode || error instanceof InvalidCrosshairShareCode) {
-			throw new Error('Invalid crosshair share code format');
-		}
-		throw error;
-	}
-};
-
-const generateConfig = (shareCode: string, fileName: string, aliasName?: string): string => {
-	const convars = getCrosshairConVars(shareCode);
-	const aliasCommand = createAliasCommand(aliasName, fileName);
-
-	return `// CS2 Crosshair Config - Generated from ${shareCode}
-// Place this file in your CS2 config folder
-// Add this to your autoexec.cfg: ${aliasCommand}
-
-// Crosshair settings
-${convars}
-host_writeconfig
-
-echo "Crosshair config loaded successfully!"`;
-};
-
-const generateConsoleCommand = (shareCode: string): string => {
-	const convars = getCrosshairConVars(shareCode);
-	const commands = convars
-		.split('\n')
-		.map((line) => line.trim().replace(/"/g, ''))
-		.filter(Boolean);
-
-	return [...commands, 'host_writeconfig'].join('; ');
-};
-
-const validateShareCode = (code: string): { valid: boolean; error?: string } => {
-	if (!code.trim()) {
-		return { valid: false, error: 'Please enter a share code' };
-	}
-
-	if (!code.startsWith('CSGO-')) {
-		return { valid: false, error: 'Share code must start with "CSGO-"' };
-	}
-
-	const parts = code.split('-');
-	if (parts.length !== 6) {
-		return { valid: false, error: 'Invalid format. Expected: CSGO-XXXXX-XXXXX-XXXXX-XXXXX-XXXXX' };
-	}
-
-	try {
-		decodeCrosshairShareCode(code);
-		return { valid: true };
-	} catch {
-		return { valid: false, error: 'Unable to decode share code. Please verify it\'s correct.' };
-	}
-};
-
 
 export const CS2ConfigGenerator = () => {
 	const location = useLocation();
@@ -363,7 +300,12 @@ export const CS2ConfigGenerator = () => {
 									<h2 className="text-base font-semibold text-foreground">Generator</h2>
 									<p className="text-sm text-muted-foreground">Paste a valid CSGO share code, optionally name it with an alias, then preview, apply, and share it instantly.</p>
 								</div>
-								<Crosshair className="h-5 w-5 text-primary" />
+								<Button asChild variant="secondary" size="sm" className="border border-primary/30 bg-primary/10 text-foreground hover:bg-primary/15">
+									<Link to="/custom">
+										<Crosshair className="h-4 w-4" />
+										Create Custom
+									</Link>
+								</Button>
 							</div>
 						</div>
 
