@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Check, ClipboardCopy, Crosshair as CrosshairIcon, ExternalLink, RotateCcw, SlidersHorizontal, TerminalSquare, Wand2 } from 'lucide-react';
+import { ArrowLeft, Check, ClipboardCopy, Crosshair as CrosshairIcon, ExternalLink, Pipette, RotateCcw, SlidersHorizontal, TerminalSquare, Wand2 } from 'lucide-react';
+import { HexColorPicker } from 'react-colorful';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
 import { copyToClipboard } from '@/lib/clipboard';
 import { crosshairToConVars, decodeCrosshairShareCode, encodeCrosshair, getCrosshairPreviewColor, InvalidCrosshairShareCode, InvalidShareCode, type Crosshair } from '@/lib/cs2-sharecode';
@@ -13,6 +15,7 @@ import { CrosshairShape } from '@/components/CrosshairShape';
 import { clampCrosshair } from '@/lib/crosshair-preview';
 import { clearCustomCrosshair, loadCustomCrosshair, saveCustomCrosshair } from '@/lib/custom-crosshair-storage';
 import { getShareCodeUrlPath } from '@/lib/share-url';
+import { hexToRgb, rgbToHex } from '@/lib/color';
 
 const DEFAULT_CROSSHAIR: Crosshair = {
 	length: 2,
@@ -42,8 +45,7 @@ const COLOR_OPTIONS = [
 	{ label: 'Green', value: 1, swatch: 'rgb(0, 255, 0)' },
 	{ label: 'Yellow', value: 2, swatch: 'rgb(255, 165, 0)' },
 	{ label: 'Blue', value: 3, swatch: 'rgb(0, 0, 255)' },
-	{ label: 'Cyan', value: 4, swatch: 'rgb(0, 255, 255)' },
-	{ label: 'Custom', value: 5, swatch: 'linear-gradient(135deg, #ff4b4b, #38ff7a 45%, #22d3ee)' }
+	{ label: 'Cyan', value: 4, swatch: 'rgb(0, 255, 255)' }
 ];
 
 const PRESETS: Array<{ name: string; description: string; crosshair: Crosshair }> = [
@@ -141,15 +143,21 @@ const CustomCrosshair = () => {
 	const [crosshair, setCrosshair] = useState<Crosshair>(() => loadCustomCrosshair(DEFAULT_CROSSHAIR));
 	const [importCode, setImportCode] = useState('');
 	const [importError, setImportError] = useState('');
+	const [customColorOpen, setCustomColorOpen] = useState(false);
 	const { toast } = useToast();
 	const shareCode = useMemo(() => encodeCrosshair(crosshair), [crosshair]);
 	const convars = useMemo(() => crosshairToConVars(crosshair), [crosshair]);
 	const previewColor = getCrosshairPreviewColor(crosshair);
 	const activeColor = `rgb(${previewColor.r}, ${previewColor.g}, ${previewColor.b})`;
+	const customHexColor = rgbToHex(crosshair.red, crosshair.green, crosshair.blue);
 	const updateCrosshair = (nextCrosshair: Crosshair) => setCrosshair(clampCrosshair(nextCrosshair));
 	const updateNumber = (key: NumberKey, value: number) => setCrosshair((current) => clampCrosshair({ ...current, [key]: value }));
 	const updateBoolean = (key: BooleanKey, value: boolean) => setCrosshair((current) => clampCrosshair({ ...current, [key]: value }));
-	const updateRgb = (key: 'red' | 'green' | 'blue', value: number) => updateNumber(key, Math.min(255, Math.max(0, Number.isFinite(value) ? value : 0)));
+	const updateCustomColor = (hex: string) => {
+		const rgb = hexToRgb(hex);
+		if (!rgb) return;
+		setCrosshair((current) => clampCrosshair({ ...current, color: 5, ...rgb }));
+	};
 
 	useEffect(() => {
 		saveCustomCrosshair(crosshair);
@@ -160,6 +168,7 @@ const CustomCrosshair = () => {
 		setCrosshair(DEFAULT_CROSSHAIR);
 		setImportCode('');
 		setImportError('');
+		setCustomColorOpen(false);
 	};
 
 	const handleCopy = async (value: string, title: string) => {
@@ -293,6 +302,34 @@ const CustomCrosshair = () => {
 												{crosshair.color === option.value && <Check className="ml-auto h-3.5 w-3.5 text-primary" />}
 											</button>
 										))}
+										<Popover open={customColorOpen} onOpenChange={setCustomColorOpen}>
+											<PopoverTrigger asChild>
+												<button
+													type="button"
+													aria-pressed={crosshair.color === 5}
+													onClick={() => updateNumber('color', 5)}
+													className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${crosshair.color === 5 ? 'border-primary bg-primary/15 text-foreground shadow-[0_0_0_1px_hsl(var(--primary)/0.25)]' : 'border-white/10 bg-background/45 text-muted-foreground hover:bg-white/[0.06]'}`}
+												>
+													<span className="h-4 w-4 rounded-full border border-white/25 shadow-inner" style={{ backgroundColor: customHexColor }} />
+													Custom
+													{crosshair.color === 5 ? <Check className="ml-auto h-3.5 w-3.5 text-primary" /> : <Pipette className="ml-auto h-3.5 w-3.5" />}
+												</button>
+											</PopoverTrigger>
+											<PopoverContent align="end" className="w-72 border-white/10 bg-popover/95 p-4 shadow-2xl backdrop-blur-xl">
+												<div className="mb-3 flex items-center justify-between gap-3">
+													<div>
+														<h3 className="text-sm font-semibold text-foreground">Choose custom color</h3>
+														<p className="text-xs text-muted-foreground">Drag across the palette to fine-tune it.</p>
+													</div>
+													<span className="h-8 w-8 shrink-0 rounded-md border border-white/20" style={{ backgroundColor: customHexColor }} />
+												</div>
+												<HexColorPicker color={customHexColor} onChange={updateCustomColor} className="!h-44 !w-full" />
+												<div className="mt-3 flex items-center justify-between rounded-md border border-white/10 bg-background/60 px-3 py-2">
+													<span className="text-xs text-muted-foreground">Hex</span>
+													<code className="text-xs font-medium uppercase text-foreground">{customHexColor}</code>
+												</div>
+											</PopoverContent>
+										</Popover>
 									</div>
 									<div className="flex items-center justify-between rounded-lg border border-white/10 bg-background/45 px-3 py-2">
 										<span className="text-xs text-muted-foreground">Selected color</span>
@@ -300,21 +337,6 @@ const CustomCrosshair = () => {
 											<span className="font-mono text-xs text-muted-foreground">{activeColor}</span>
 											<span className="h-6 w-6 rounded-full border border-white/25 shadow-[0_0_18px_rgba(255,255,255,.08)]" style={{ backgroundColor: activeColor }} />
 										</div>
-									</div>
-								</div>
-
-								<div className="grid grid-cols-3 gap-3">
-									<div className="space-y-2">
-										<label htmlFor="custom-red" className="text-xs text-muted-foreground">Red</label>
-										<Input id="custom-red" type="number" min={0} max={255} value={crosshair.red} disabled={crosshair.color !== 5} onChange={(event) => updateRgb('red', Number(event.target.value))} className="h-10 border-white/10 bg-background/70" />
-									</div>
-									<div className="space-y-2">
-										<label htmlFor="custom-green" className="text-xs text-muted-foreground">Green</label>
-										<Input id="custom-green" type="number" min={0} max={255} value={crosshair.green} disabled={crosshair.color !== 5} onChange={(event) => updateRgb('green', Number(event.target.value))} className="h-10 border-white/10 bg-background/70" />
-									</div>
-									<div className="space-y-2">
-										<label htmlFor="custom-blue" className="text-xs text-muted-foreground">Blue</label>
-										<Input id="custom-blue" type="number" min={0} max={255} value={crosshair.blue} disabled={crosshair.color !== 5} onChange={(event) => updateRgb('blue', Number(event.target.value))} className="h-10 border-white/10 bg-background/70" />
 									</div>
 								</div>
 

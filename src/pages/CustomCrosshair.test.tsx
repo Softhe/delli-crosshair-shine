@@ -11,18 +11,19 @@ const renderBuilder = () => render(
 );
 
 describe('CustomCrosshair', () => {
-	it('exposes named sliders and disabled custom RGB inputs', () => {
+	it('exposes named sliders without numeric RGB inputs', () => {
 		renderBuilder();
 		expect(screen.getByRole('slider', { name: 'Length' })).toBeInTheDocument();
 		expect(screen.getByRole('slider', { name: 'Thickness' })).toBeInTheDocument();
-		expect(screen.getByLabelText('Red')).toBeDisabled();
+		expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
 	});
 
-	it('enables custom RGB controls when Custom is selected', async () => {
+	it('opens a visual color picker when Custom is selected', async () => {
 		const user = userEvent.setup();
 		renderBuilder();
-		await user.click(screen.getByRole('button', { name: /Custom/ }));
-		expect(screen.getByLabelText('Red')).toBeEnabled();
+		await user.click(screen.getByRole('button', { name: 'Custom' }));
+		expect(screen.getByText('Choose custom color')).toBeInTheDocument();
+		expect(screen.getByText('#00ffff')).toBeInTheDocument();
 		expect(screen.getByRole('link', { name: 'Open in converter' })).toHaveAttribute('href', expect.stringMatching(/^\/CSGO-/));
 	});
 
