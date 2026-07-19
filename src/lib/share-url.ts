@@ -22,7 +22,12 @@ export const getShareCodeFromUrl = (location: { pathname: string; search: string
 	return decodeUrlShareCode(pathCode || null);
 };
 
-export const getShareCodeUrlPath = (code: string): string => `/${encodeURIComponent(code.trim())}`;
+/**
+ * Share links live on the site's real root document so static hosts return a
+ * successful status instead of serving their 404 fallback. Legacy
+ * `/CSGO-...` links remain readable via getShareCodeFromUrl.
+ */
+export const getShareCodeUrlPath = (code: string): string => `/?code=${encodeURIComponent(code.trim())}`;
 
 export const getShareUrl = (code: string, origin: string): string => `${origin}${getShareCodeUrlPath(code)}`;
 

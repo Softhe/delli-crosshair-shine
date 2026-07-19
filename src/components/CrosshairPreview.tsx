@@ -170,8 +170,10 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 					</span>
 				</div>
 				<div className="flex items-center gap-1">
-					<Palette className="w-3 h-3 text-muted-foreground" />
+					<Palette className="w-3 h-3 text-muted-foreground" aria-hidden="true" />
+					<label htmlFor="preview-background" className="sr-only">Preview background</label>
 					<select
+						id="preview-background"
 						value={backgroundType}
 						onChange={(e) => setBackgroundType(e.target.value as BackgroundType)}
 						className="text-xs bg-secondary/50 border border-tactical-blue/30 rounded px-2 py-1 text-foreground"
@@ -184,7 +186,7 @@ export const CrosshairPreview = ({ shareCode }: CrosshairPreviewProps) => {
 			</div>
 
 			{/* Preview Container */}
-			<div className="aspect-[4/3] w-full max-w-[512px] flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg relative overflow-hidden">
+			<div className="aspect-[4/3] w-full max-w-[512px] flex items-center justify-center bg-secondary/30 border border-tactical-blue/20 rounded-lg relative overflow-hidden" role="img" aria-label={`Crosshair preview on ${backgroundOptions.find(({ value }) => value === backgroundType)?.label ?? backgroundType} background`}>
 				{/* Dynamic background based on selection */}
 				<div className="absolute inset-0" style={{ background: backgroundStyle.background }}></div>
 

@@ -1,0 +1,76 @@
+import { describe, expect, it } from 'vitest';
+import {
+	crosshairToConVars,
+	decodeCrosshairShareCode,
+	encodeCrosshair,
+	InvalidCrosshairShareCode,
+	InvalidShareCode,
+	type Crosshair,
+} from '@/lib/cs2-sharecode';
+
+interface CrosshairFixture {
+	name: string;
+	code: string;
+	expected: Crosshair;
+}
+
+// Real share codes exposed by the product's Example action. Keeping the decoded
+// values here makes this a regression corpus instead of a self-referential
+// encode/decode test.
+const CROSSHAIR_CORPUS: CrosshairFixture[] = [
+	{
+		name: 'small green static',
+		code: 'CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA',
+		expected: {
+			gap: -4, outline: 1, red: 0, green: 255, blue: 0, alpha: 255,
+			splitDistance: 3, fixedCrosshairGap: 3, color: 4, outlineEnabled: false,
+			innerSplitAlpha: 0, outerSplitAlpha: 1, splitSizeRatio: 1, thickness: 1,
+			centerDotEnabled: false, deployedWeaponGapEnabled: false, alphaEnabled: true,
+			tStyleEnabled: false, style: 4, length: 1,
+		},
+	},
+	{
+		name: 'translucent custom-color static',
+		code: 'CSGO-RBZih-6Hynp-ieuGe-tTkVz-9PqNO',
+		expected: {
+			gap: -3.5, outline: 1, red: 0, green: 255, blue: 255, alpha: 200,
+			splitDistance: 3, fixedCrosshairGap: 3, color: 5, outlineEnabled: false,
+			innerSplitAlpha: 0, outerSplitAlpha: 1, splitSizeRatio: 1, thickness: 1,
+			centerDotEnabled: false, deployedWeaponGapEnabled: false, alphaEnabled: true,
+			tStyleEnabled: false, style: 4, length: 1,
+		},
+	},
+	{
+		name: 'outlined center dot',
+		code: 'CSGO-sXMJy-i8zaz-T4jvf-G8Ay7-b2D7K',
+		expected: {
+			gap: -3, outline: 0, red: 0, green: 238, blue: 144, alpha: 255,
+			splitDistance: 3, fixedCrosshairGap: 3, color: 4, outlineEnabled: true,
+			innerSplitAlpha: 0, outerSplitAlpha: 1, splitSizeRatio: 1, thickness: 1.5,
+			centerDotEnabled: true, deployedWeaponGapEnabled: false, alphaEnabled: true,
+			tStyleEnabled: false, style: 4, length: 0,
+		},
+	},
+];
+
+describe('CS2 crosshair share-code corpus', () => {
+	it.each(CROSSHAIR_CORPUS)('decodes and byte-round-trips $name', ({ code, expected }) => {
+		const decoded = decodeCrosshairShareCode(code);
+		expect(decoded).toEqual(expected);
+		expect(encodeCrosshair(decoded)).toBe(code);
+	});
+
+	it('maps decoded values to the expected CS2 console variables', () => {
+		const convars = crosshairToConVars(decodeCrosshairShareCode(CROSSHAIR_CORPUS[2].code));
+		expect(convars).toContain('cl_crosshair_drawoutline "1"');
+		expect(convars).toContain('cl_crosshairdot "1"');
+		expect(convars).toContain('cl_crosshairsize "0"');
+		expect(convars).toContain('cl_crosshairthickness "1.5"');
+		expect(convars).toContain('cl_crosshairstyle "4"');
+	});
+
+	it('distinguishes malformed codes from checksum failures', () => {
+		expect(() => decodeCrosshairShareCode('not-a-share-code')).toThrow(InvalidShareCode);
+		expect(() => decodeCrosshairShareCode('CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPB')).toThrow(InvalidCrosshairShareCode);
+	});
+});

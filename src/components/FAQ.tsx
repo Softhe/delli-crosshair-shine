@@ -15,7 +15,7 @@ export const FAQ = () => {
 		},
 		{
 			question: "How do delli.cc crosshair share links work?",
-			answer: "Every valid crosshair code becomes a shareable URL automatically. Paste or load a code, then copy the Share Link button or the address bar URL. Anyone opening that delli.cc/CSGO-... link lands on this tool with the same active crosshair already applied."
+			answer: "Every valid crosshair code becomes a shareable URL automatically. Paste or load a code, then copy the Share Link button or the address bar URL. Anyone opening that delli.cc/?code=CSGO-... link lands on this tool with the same active crosshair already applied."
 		},
 		{
 			question: "Where do I place the generated config file?",
@@ -59,7 +59,7 @@ export const FAQ = () => {
 		},
 		{
 			question: "Can I share my crosshair config with friends?",
-			answer: "Yes. The built-in Share Link action copies a delli.cc/CSGO-... URL that opens this tool with your crosshair already active. You can still share the raw CS2 code or generated .cfg file if that fits your workflow better."
+			answer: "Yes. The built-in Share Link action copies a delli.cc/?code=CSGO-... URL that opens this tool with your crosshair already active. You can still share the raw CS2 code or generated .cfg file if that fits your workflow better."
 		}
 	];
 

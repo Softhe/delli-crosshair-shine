@@ -56,7 +56,7 @@ export const CS2ConfigGenerator = () => {
 		}
 
 		const shareUrlPath = getShareCodeUrlPath(trimmedShareCode);
-		if (location.pathname !== shareUrlPath || location.search) {
+		if (`${location.pathname}${location.search}` !== shareUrlPath) {
 			navigate(shareUrlPath, { replace: true });
 		}
 	}, [shareCode, location.pathname, location.search, navigate]);
@@ -295,7 +295,7 @@ export const CS2ConfigGenerator = () => {
 				<div className="space-y-6">
 					<Card className="overflow-hidden border-white/10 bg-card/75 p-0 shadow-2xl shadow-black/25 backdrop-blur-xl">
 						<div className="border-b border-white/10 bg-white/[0.03] px-5 py-4 md:px-6">
-							<div className="flex items-center justify-between gap-3">
+							<div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
 								<div>
 									<h2 className="text-base font-semibold text-foreground">Generator</h2>
 									<p className="text-sm text-muted-foreground">Paste a valid CSGO share code, optionally name it with an alias, then preview, apply, and share it instantly.</p>
@@ -315,6 +315,8 @@ export const CS2ConfigGenerator = () => {
 								<div className="relative">
 									<Input
 										id="shareCode"
+										aria-invalid={validationState === 'invalid'}
+										aria-describedby={errorMessage ? 'share-code-error' : undefined}
 										type="text"
 										placeholder="CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA"
 										value={shareCode}
@@ -323,7 +325,7 @@ export const CS2ConfigGenerator = () => {
 									/>
 									{validationState !== 'idle' && (
 										<div className="absolute right-4 top-1/2 -translate-y-1/2">
-											{validationState === 'valid' ? <Check className="h-5 w-5 text-success" /> : <AlertCircle className="h-5 w-5 text-destructive" />}
+											{validationState === 'valid' ? <Check className="h-5 w-5 text-success" aria-hidden="true" /> : <AlertCircle className="h-5 w-5 text-destructive" aria-hidden="true" />}
 										</div>
 									)}
 								</div>
@@ -373,7 +375,7 @@ export const CS2ConfigGenerator = () => {
 									</div>
 								)}
 								{errorMessage && (
-									<div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+									<div id="share-code-error" role="alert" className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
 										<AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
 										<span>{errorMessage}</span>
 									</div>

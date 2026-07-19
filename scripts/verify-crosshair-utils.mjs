@@ -33,7 +33,7 @@ assert.equal(
 );
 assert.equal(
   shareUrl.getShareCodeUrlPath(' CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA '),
-  '/CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA'
+  '/?code=CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA'
 );
 
 assert.equal(config.createConfigFileName('og small'), 'crosshair_og_small.cfg');

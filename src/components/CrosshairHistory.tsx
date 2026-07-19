@@ -133,13 +133,14 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							</div>
 						)}
 					</div>
-					<div className="relative z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+					<div className="relative z-20 flex items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
 						<Button
 							onClick={() => handleToggleFavorite(item)}
 							variant="ghost"
 							size="icon"
 							className="h-8 w-8"
 							title={isFav ? "Remove from favorites" : "Add to favorites"}
+							aria-label={`${isFav ? "Remove" : "Add"} ${item.aliasName || "crosshair"} ${isFav ? "from" : "to"} favorites`}
 						>
 							<Star className={`w-4 h-4 ${isFav ? 'fill-yellow-500 text-yellow-500' : ''}`} />
 						</Button>
@@ -149,6 +150,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							size="icon"
 							className="h-8 w-8"
 							title="Copy share code"
+							aria-label={`Copy share code for ${item.aliasName || "crosshair"}`}
 						>
 							<Copy className="w-4 h-4" />
 						</Button>
@@ -158,6 +160,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							size="icon"
 							className="h-8 w-8 text-primary hover:text-primary"
 							title="Copy share link"
+							aria-label={`Copy share link for ${item.aliasName || "crosshair"}`}
 						>
 							<Share2 className="w-4 h-4" />
 						</Button>
@@ -167,6 +170,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							size="icon"
 							className="h-8 w-8"
 							title="Load crosshair"
+							aria-label={`Load ${item.aliasName || "crosshair"}`}
 						>
 							<Download className="w-4 h-4" />
 						</Button>
@@ -177,6 +181,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 								size="icon"
 								className="h-8 w-8 text-destructive hover:text-destructive"
 								title="Remove from history"
+								aria-label={`Remove ${item.aliasName || "crosshair"} from history`}
 							>
 								<Trash2 className="w-4 h-4" />
 							</Button>
@@ -187,7 +192,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 					onClick={() => onSelectCrosshair(item.shareCode, item.aliasName)}
 					variant="ghost"
 					className="absolute inset-0 z-0 h-full w-full opacity-0"
-					aria-label="Load crosshair"
+					aria-label={`Load ${item.aliasName || "crosshair"}`}
 				/>
 			</div>
 		);

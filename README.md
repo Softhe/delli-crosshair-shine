@@ -14,25 +14,17 @@ A powerful web tool to convert CS2 crosshair share codes into config files insta
 - 🔒 **100% Private**: All processing happens locally in your browser
 - 🎮 **Gaming UI**: Beautiful dark theme with neon accents
 
-## Project info
+## Live site
 
-**URL**: https://lovable.dev/projects/9ac33d58-404e-42b7-a1fa-fec0fe19d236
+**URL**: https://delli.cc/
 
 ## How can I edit this code?
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/9ac33d58-404e-42b7-a1fa-fec0fe19d236) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
+Clone the repository and work locally with Node.js 20 or newer and pnpm 11.7.0. Enable pnpm with `corepack enable` if it is not already available.
 
 **Use your preferred IDE**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The project requires Node.js 20 or newer and pnpm 11.7.0. Install Node.js with [nvm](https://github.com/nvm-sh/nvm#installing-and-updating), then enable pnpm with `corepack enable`.
+If you want to work locally using your own IDE, clone this repository and push changes through the normal GitHub workflow.
 
 Follow these steps:
 
@@ -74,17 +66,19 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
+## Deployment
 
-Simply open [Lovable](https://lovable.dev/projects/9ac33d58-404e-42b7-a1fa-fec0fe19d236) and click on Share -> Publish.
+Merges to `main` are verified by CI and deployed to GitHub Pages by `.github/workflows/deploy.yml`. The production build includes the `delli.cc` custom-domain file, sitemap, crawler rules, a real static `/custom` entry, and a `404.html` fallback for old path-based share links.
 
-## Can I connect a custom domain to my Lovable project?
+Run the same release checks locally before merging:
 
-Yes, you can!
+```sh
+pnpm check
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+New crosshair links use `https://delli.cc/?code=CSGO-...`. Keeping the code in the query string means GitHub Pages serves the root page with HTTP 200. Existing `https://delli.cc/CSGO-...` links are still understood by the app after the Pages fallback loads, but the fallback itself may retain a 404 HTTP status.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+The custom domain is declared in `public/CNAME`. DNS and the GitHub repository's Pages settings must continue to point `delli.cc` at this Pages site.
 
 ## 📚 Documentation
 

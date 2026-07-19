@@ -258,7 +258,7 @@ const CustomCrosshair = () => {
 
 							<div className="rounded-lg border border-white/10 bg-background/45 p-4">
 								<div className="mb-3 text-sm font-semibold text-foreground">Import share code</div>
-								<div className="flex gap-2">
+								<div className="flex flex-col gap-2 sm:flex-row">
 									<Input
 										aria-label="CS2 crosshair share code"
 										aria-invalid={Boolean(importError)}
