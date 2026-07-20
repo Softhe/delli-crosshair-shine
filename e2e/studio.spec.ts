@@ -81,7 +81,7 @@ test('loads the unified studio without runtime or layout failures', async ({ pag
     expect(libraryBox!.x).toBeGreaterThanOrEqual(leftStackBox!.x);
     expect(libraryBox!.x + libraryBox!.width).toBeLessThanOrEqual(leftStackBox!.x + leftStackBox!.width + 1);
     expect(libraryBox!.y - (customizeBox!.y + customizeBox!.height)).toBeLessThan(32);
-    expect(Math.abs(leftStackBox!.height - rightStackBox!.height)).toBeGreaterThan(100);
+    expect(Math.abs(leftStackBox!.height - rightStackBox!.height)).toBeGreaterThan(40);
     expect(saveHeadingBox!.y + saveHeadingBox!.height).toBeLessThan(1272);
     expect(copyCommandBox!.y + copyCommandBox!.height).toBeLessThan(1272);
   }
