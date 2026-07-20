@@ -3,6 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 const VALID_CODE = 'CSGO-RBZih-6Hynp-ieuGe-tTkVz-9PqNO';
+const DOT_CODE = 'CSGO-zDZH2-jXXvr-yFaQu-OjXPS-G8sdA';
 
 test('loads the unified studio without runtime or layout failures', async ({ page }, testInfo) => {
   const errors: string[] = [];
@@ -11,10 +12,37 @@ test('loads the unified studio without runtime or layout failures', async ({ pag
   });
   page.on('pageerror', (error) => errors.push(error.message));
 
+  if (testInfo.project.name === 'desktop-chromium') {
+    await page.setViewportSize({ width: 1497, height: 1272 });
+  }
+
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'CS2 Crosshair Studio' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Customize' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Live preview' })).toBeVisible();
+
+  const controlCenter = page.getByTestId('control-center');
+  await expect(controlCenter.getByTestId('import-controls')).toBeVisible();
+  await expect(controlCenter.getByTestId('customize-controls')).toBeVisible();
+  await expect(controlCenter.getByTestId('preview-workspace')).toBeVisible();
+  await expect(controlCenter.getByTestId('export-controls')).toBeVisible();
+  await expect(controlCenter.getByRole('button', { name: 'Reset' })).toBeVisible();
+  await expect(controlCenter.getByRole('button', { name: 'Download CFG' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Local crosshair library' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Recent (0)' })).toBeVisible();
+  await expect(page.getByText('Codes you load or export are saved only in this browser.')).toBeVisible();
+
+  const sliderStack = controlCenter.getByTestId('slider-stack');
+  const sliderNames = ['Length', 'Thickness', 'Gap', 'Outline thickness', 'Alpha'];
+  const sliderBoxes = await Promise.all(sliderNames.map((name) => sliderStack.locator(`[data-setting-slider="${name}"]`).boundingBox()));
+  expect(sliderBoxes.every(Boolean)).toBe(true);
+  const sliderLeftEdges = sliderBoxes.map((box) => box!.x);
+  const sliderWidths = sliderBoxes.map((box) => box!.width);
+  expect(Math.max(...sliderLeftEdges) - Math.min(...sliderLeftEdges)).toBeLessThan(2);
+  expect(Math.max(...sliderWidths) - Math.min(...sliderWidths)).toBeLessThan(2);
+  for (let index = 1; index < sliderBoxes.length; index += 1) {
+    expect(sliderBoxes[index]!.y).toBeGreaterThan(sliderBoxes[index - 1]!.y);
+  }
 
   const layout = await page.evaluate(() => ({
     clientWidth: document.documentElement.clientWidth,
@@ -22,14 +50,40 @@ test('loads the unified studio without runtime or layout failures', async ({ pag
   }));
   expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth);
 
-  const customizeBox = await page.getByRole('heading', { name: 'Customize' }).boundingBox();
-  const previewBox = await page.getByRole('heading', { name: 'Live preview' }).boundingBox();
+  const controlCenterBox = await controlCenter.boundingBox();
+  const customizeBox = await controlCenter.getByTestId('customize-controls').boundingBox();
+  const previewBox = await controlCenter.getByTestId('preview-workspace').boundingBox();
+  const exportBox = await controlCenter.getByTestId('export-controls').boundingBox();
+  const libraryBox = await page.getByTestId('local-crosshair-library').boundingBox();
+  expect(controlCenterBox).not.toBeNull();
   expect(customizeBox).not.toBeNull();
   expect(previewBox).not.toBeNull();
+  expect(exportBox).not.toBeNull();
+  expect(libraryBox).not.toBeNull();
+  expect(previewBox!.x).toBeGreaterThanOrEqual(controlCenterBox!.x);
+  expect(previewBox!.x + previewBox!.width).toBeLessThanOrEqual(controlCenterBox!.x + controlCenterBox!.width + 1);
   if (testInfo.project.name === 'mobile-chromium') {
-    expect(customizeBox!.y).toBeLessThan(previewBox!.y);
+    expect(previewBox!.y).toBeGreaterThan(customizeBox!.y);
+    expect(exportBox!.y).toBeGreaterThan(previewBox!.y);
+    expect(libraryBox!.y).toBeGreaterThan(exportBox!.y);
   } else {
-    expect(Math.abs(customizeBox!.y - previewBox!.y)).toBeLessThan(100);
+    const leftStackBox = await controlCenter.getByTestId('editor-left-stack').boundingBox();
+    const rightStackBox = await controlCenter.getByTestId('editor-right-stack').boundingBox();
+    const saveHeadingBox = await controlCenter.getByRole('heading', { name: 'Save & switch' }).boundingBox();
+    const copyCommandBox = await controlCenter.getByRole('button', { name: 'Copy command' }).boundingBox();
+    expect(leftStackBox).not.toBeNull();
+    expect(rightStackBox).not.toBeNull();
+    expect(saveHeadingBox).not.toBeNull();
+    expect(copyCommandBox).not.toBeNull();
+    expect(previewBox!.x).toBeGreaterThan(customizeBox!.x);
+    expect(Math.abs(previewBox!.x - exportBox!.x)).toBeLessThan(2);
+    expect(previewBox!.height).toBeLessThan(400);
+    expect(libraryBox!.x).toBeGreaterThanOrEqual(leftStackBox!.x);
+    expect(libraryBox!.x + libraryBox!.width).toBeLessThanOrEqual(leftStackBox!.x + leftStackBox!.width + 1);
+    expect(libraryBox!.y - (customizeBox!.y + customizeBox!.height)).toBeLessThan(32);
+    expect(Math.abs(leftStackBox!.height - rightStackBox!.height)).toBeGreaterThan(100);
+    expect(saveHeadingBox!.y + saveHeadingBox!.height).toBeLessThan(1272);
+    expect(copyCommandBox!.y + copyCommandBox!.height).toBeLessThan(1272);
   }
 
   expect(errors).toEqual([]);
@@ -48,19 +102,117 @@ test('updates the preview, share code, URL, and draft from a preset', async ({ p
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cs2_custom_crosshair_draft'))).toBe(code);
 });
 
+test('offers persistent CS2 and calm Crimson redesigns with a deep-teal Tactical default', async ({ page }) => {
+  await page.goto('/');
+  const root = page.locator('html');
+
+  const tacticalTokens = await page.evaluate(() => {
+    const styles = getComputedStyle(document.documentElement);
+    return { primary: styles.getPropertyValue('--primary').trim(), accent: styles.getPropertyValue('--accent').trim(), background: styles.getPropertyValue('--gradient-background').trim() };
+  });
+  expect(tacticalTokens.primary).toBe('174 72% 42%');
+  expect(tacticalTokens.accent).toBe('191 78% 52%');
+  expect(tacticalTokens.background).toContain('174 72% 42%');
+
+  await page.getByRole('button', { name: 'CS2', exact: true }).click();
+  await expect(root).toHaveAttribute('data-palette', 'cs2');
+  const cs2Tokens = await page.evaluate(() => {
+    const styles = getComputedStyle(document.documentElement);
+    return { primary: styles.getPropertyValue('--primary').trim(), background: styles.getPropertyValue('--gradient-background').trim() };
+  });
+  expect(cs2Tokens.primary).toBe('28 80% 55%');
+  expect(cs2Tokens.background).toContain('28 80% 50%');
+  await page.waitForTimeout(300);
+  const cs2A11y = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
+  expect(cs2A11y.violations).toEqual([]);
+
+  await page.getByRole('button', { name: 'Crimson' }).click();
+  await expect(root).toHaveAttribute('data-palette', 'crimson');
+  const crimsonTokens = await page.evaluate(() => {
+    const styles = getComputedStyle(document.documentElement);
+    return { primary: styles.getPropertyValue('--primary').trim(), background: styles.getPropertyValue('--gradient-background').trim() };
+  });
+  expect(crimsonTokens.primary).toBe('345 52% 38%');
+  expect(crimsonTokens.background).toContain('345 52% 34%');
+  expect(crimsonTokens).not.toEqual(cs2Tokens);
+  await page.waitForTimeout(300);
+  const crimsonA11y = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
+  expect(crimsonA11y.violations).toEqual([]);
+
+  await page.reload();
+  await expect(root).toHaveAttribute('data-palette', 'crimson');
+  await expect(page.getByRole('button', { name: 'Crimson' })).toHaveAttribute('aria-pressed', 'true');
+
+  await page.evaluate(() => localStorage.setItem('cs2_studio_palette', 'cobalt'));
+  await page.reload();
+  await expect(root).toHaveAttribute('data-palette', 'tactical');
+  await expect(page.getByRole('button', { name: 'Tactical' })).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('keeps the full creator visible and loads the exact Dot preset', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Dot' }).click();
+
+  await expect(page.getByRole('textbox', { name: 'CS2 crosshair share code', exact: true })).toHaveValue(DOT_CODE);
+  await expect(page.getByRole('slider', { name: 'Length' })).toHaveAttribute('aria-valuenow', '0');
+  await expect(page.getByRole('slider', { name: 'Thickness', exact: true })).toHaveAttribute('aria-valuenow', '1');
+  await expect(page.getByRole('slider', { name: 'Gap' })).toHaveAttribute('aria-valuenow', '-5');
+  await expect(page.getByRole('slider', { name: 'Outline thickness' })).toHaveAttribute('aria-valuenow', '1');
+  await expect(page.getByRole('slider', { name: 'Alpha' })).toHaveAttribute('aria-valuenow', '255');
+  await expect(page.getByRole('checkbox', { name: 'Center dot' })).toBeChecked();
+  await expect(page.getByRole('checkbox', { name: 'Outline' })).toBeChecked();
+  await expect(page.getByRole('checkbox', { name: 'Use alpha' })).toBeChecked();
+});
+
+test('edits every restored control and carries the values into generated convars', async ({ page }) => {
+  await page.goto(`/?code=${DOT_CODE}`);
+
+  await page.getByRole('slider', { name: 'Thickness', exact: true }).press('ArrowRight');
+  await page.getByRole('slider', { name: 'Gap' }).press('ArrowRight');
+  await page.getByRole('slider', { name: 'Outline thickness' }).press('ArrowRight');
+  await page.getByRole('slider', { name: 'Alpha' }).press('ArrowLeft');
+  await page.getByRole('checkbox', { name: 'Center dot' }).click();
+
+  await expect(page.getByRole('slider', { name: 'Thickness', exact: true })).toHaveAttribute('aria-valuenow', '1.5');
+  await expect(page.getByRole('slider', { name: 'Gap' })).toHaveAttribute('aria-valuenow', '-4.5');
+  await expect(page.getByRole('slider', { name: 'Outline thickness' })).toHaveAttribute('aria-valuenow', '1.5');
+  await expect(page.getByRole('slider', { name: 'Alpha' })).toHaveAttribute('aria-valuenow', '254');
+  await expect(page.getByRole('checkbox', { name: 'Center dot' })).not.toBeChecked();
+
+  await page.getByText('Show generated convars', { exact: true }).click();
+  const convars = page.locator('pre');
+  await expect(convars).toContainText('cl_crosshairdot "0"');
+  await expect(convars).toContainText('cl_crosshairgap "-4.5"');
+  await expect(convars).toContainText('cl_crosshairthickness "1.5"');
+  await expect(convars).toContainText('cl_crosshair_outlinethickness "1.5"');
+  await expect(convars).toContainText('cl_crosshairalpha "254"');
+
+  await page.getByRole('checkbox', { name: 'Outline' }).click();
+  await expect(page.getByRole('slider', { name: 'Outline thickness' })).toHaveAttribute('aria-disabled', 'true');
+  await page.getByRole('checkbox', { name: 'Use alpha' }).click();
+  await expect(page.getByRole('slider', { name: 'Alpha' })).toHaveAttribute('aria-disabled', 'true');
+});
+
 test('copies active outputs, downloads the displayed file, and manages favorites', async ({ page }) => {
   await page.goto('/');
   const code = await page.getByRole('textbox', { name: 'CS2 crosshair share code', exact: true }).inputValue();
 
   await page.getByRole('button', { name: 'Copy code' }).click();
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(code);
+  await expect(page.getByRole('tab', { name: 'Recent (1)' })).toBeVisible();
+  await expect(page.getByTestId('history-item')).toHaveAttribute('data-activity', 'exported');
+  await expect(page.getByTestId('history-item').getByText('Exported')).toBeVisible();
 
   await page.getByRole('button', { name: 'Share link', exact: true }).click();
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(`http://127.0.0.1:4175/?code=${code}`);
 
-  await page.getByText('Optional alias and filename', { exact: true }).click();
-  await page.getByLabel('Alias name').fill('team green');
+  await page.getByLabel('Alias name', { exact: false }).fill('team green');
   await expect(page.getByText('crosshair_team_green.cfg', { exact: true })).toBeVisible();
+  await expect(page.getByText('alias "team_green" "exec crosshair_team_green.cfg"', { exact: true })).toBeVisible();
 
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download CFG' }).click();
@@ -84,6 +236,9 @@ test('pastes valid codes and exposes invalid clipboard values accessibly', async
   const codeInput = page.getByRole('textbox', { name: 'CS2 crosshair share code', exact: true });
   await expect(codeInput).toHaveValue(VALID_CODE);
   await expect(page).toHaveURL(`/?code=${VALID_CODE}`);
+  await expect(page.getByRole('tab', { name: 'Recent (1)' })).toBeVisible();
+  await expect(page.getByTestId('history-item')).toHaveAttribute('data-activity', 'imported');
+  await expect(page.getByTestId('history-item').getByText('Loaded')).toBeVisible();
 
   await page.evaluate(() => navigator.clipboard.writeText('invalid clipboard value'));
   await page.getByRole('button', { name: 'Paste', exact: true }).click();
@@ -95,6 +250,8 @@ test('supports compatibility routes and rejects invalid slugs', async ({ page })
   await page.goto(`/custom?code=${VALID_CODE}#help`);
   await expect(page).toHaveURL(`/?code=${VALID_CODE}#help`);
   await expect(page.getByRole('textbox', { name: 'CS2 crosshair share code', exact: true })).toHaveValue(VALID_CODE);
+  await expect(page.getByRole('tab', { name: 'Recent (1)' })).toBeVisible();
+  await expect(page.getByTestId('history-item')).toHaveAttribute('data-activity', 'imported');
 
   await page.goto(`/${VALID_CODE}`);
   await expect(page.getByRole('heading', { name: 'CS2 Crosshair Studio' })).toBeVisible();
