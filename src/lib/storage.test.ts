@@ -15,14 +15,15 @@ const FIRST_CODE = 'CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA';
 const SECOND_CODE = 'CSGO-RBZih-6Hynp-ieuGe-tTkVz-9PqNO';
 
 describe('crosshair history and favorites persistence', () => {
-	it('deduplicates recent history and keeps the newest alias', () => {
-		addToHistory({ shareCode: FIRST_CODE, aliasName: 'old' });
-		addToHistory({ shareCode: SECOND_CODE });
-		addToHistory({ shareCode: FIRST_CODE, aliasName: 'updated' });
+	it('deduplicates recent history and keeps the newest alias and activity', () => {
+		addToHistory({ shareCode: FIRST_CODE, aliasName: 'old', activity: 'imported' });
+		addToHistory({ shareCode: SECOND_CODE, activity: 'imported' });
+		addToHistory({ shareCode: FIRST_CODE, aliasName: 'updated', activity: 'exported' });
 
 		expect(getHistory()).toHaveLength(2);
 		expect(getHistory().map(({ shareCode }) => shareCode)).toEqual([FIRST_CODE, SECOND_CODE]);
 		expect(getHistory()[0].aliasName).toBe('updated');
+		expect(getHistory()[0].activity).toBe('exported');
 	});
 
 	it('toggles a favorite without creating duplicates', () => {

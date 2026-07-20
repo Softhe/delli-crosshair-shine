@@ -4,50 +4,51 @@
 
 @layer base {
 	:root {
-		--background: 224 22% 7%;
-		--foreground: 42 28% 94%;
+		--background: 184 34% 6%;
+		--foreground: 165 28% 95%;
 
-		--card: 222 18% 10%;
-		--card-foreground: 42 28% 94%;
+		--card: 182 27% 10%;
+		--card-foreground: 165 28% 95%;
 
-		--popover: 222 18% 10%;
-		--popover-foreground: 42 28% 94%;
+		--popover: 182 27% 10%;
+		--popover-foreground: 165 28% 95%;
 
-		--primary: 168 82% 46%;
-		--primary-foreground: 220 28% 7%;
+		--primary: 174 72% 42%;
+		--primary-foreground: 184 40% 6%;
 
-		--secondary: 226 14% 16%;
-		--secondary-foreground: 42 28% 94%;
+		--secondary: 183 18% 16%;
+		--secondary-foreground: 165 28% 95%;
 
-		--muted: 225 13% 17%;
-		--muted-foreground: 38 12% 66%;
+		--muted: 184 14% 17%;
+		--muted-foreground: 172 13% 68%;
 
-		--accent: 28 92% 58%;
-		--accent-foreground: 220 28% 7%;
+		--accent: 191 78% 52%;
+		--accent-foreground: 184 40% 7%;
 
-		--neon-cyan: 168 82% 46%;
-		--neon-purple: 325 72% 58%;
-		--neon-orange: 28 92% 58%;
-		--tactical-blue: 214 36% 38%;
+		--neon-cyan: 191 78% 52%;
+		--neon-purple: 162 63% 48%;
+		--neon-orange: 185 70% 48%;
+		--tactical-blue: 187 44% 34%;
 
 		--success: 141 62% 48%;
 		--warning: 42 94% 56%;
 		--destructive: 0 74% 58%;
-		--destructive-foreground: 42 28% 94%;
+		--destructive-foreground: 165 28% 95%;
 
-		--border: 222 16% 22%;
-		--input: 222 16% 18%;
-		--ring: 168 82% 46%;
+		--border: 183 19% 23%;
+		--input: 183 20% 16%;
+		--ring: 174 72% 42%;
 
 		--gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
-		--gradient-secondary: linear-gradient(135deg, hsl(214 36% 26%) 0%, hsl(var(--primary)) 100%);
+		--gradient-secondary: linear-gradient(135deg, hsl(187 44% 24%) 0%, hsl(var(--primary)) 100%);
 		--gradient-background:
-			radial-gradient(circle at 12% 12%, hsl(168 82% 46% / 0.14), transparent 28rem),
-			radial-gradient(circle at 86% 8%, hsl(28 92% 58% / 0.13), transparent 24rem),
-			linear-gradient(135deg, hsl(224 24% 6%) 0%, hsl(228 18% 9%) 48%, hsl(222 20% 7%) 100%);
+			radial-gradient(circle at 12% 12%, hsl(174 72% 42% / 0.18), transparent 28rem),
+			radial-gradient(circle at 86% 8%, hsl(191 78% 52% / 0.11), transparent 24rem),
+			linear-gradient(135deg, hsl(184 38% 5%) 0%, hsl(182 27% 9%) 48%, hsl(188 30% 6%) 100%);
 
-		--crosshair-preview-bg: 222 18% 12%;
-		--crosshair-color: 168 82% 46%;
+		--crosshair-preview-bg: 182 24% 12%;
+		--crosshair-color: 174 72% 42%;
+		--grid-color: 174 55% 76%;
 
 		--radius: 0.5rem;
 
@@ -62,13 +63,89 @@
 	}
 
 	.dark {
-		--background: 224 22% 7%;
-		--foreground: 42 28% 94%;
-		--card: 222 18% 10%;
-		--card-foreground: 42 28% 94%;
-		--primary: 168 82% 46%;
-		--neon-cyan: 168 82% 46%;
-		--tactical-blue: 214 36% 38%;
+		--background: 184 34% 6%;
+		--foreground: 165 28% 95%;
+		--card: 182 27% 10%;
+		--card-foreground: 165 28% 95%;
+		--primary: 174 72% 42%;
+		--neon-cyan: 191 78% 52%;
+		--tactical-blue: 187 44% 34%;
+	}
+
+	:root[data-palette='cs2'],
+	.dark[data-palette='cs2'] {
+		--background: 214 22% 8%;
+		--foreground: 38 24% 94%;
+		--card: 214 19% 12%;
+		--card-foreground: 38 24% 94%;
+		--popover: 214 20% 13%;
+		--popover-foreground: 38 24% 94%;
+		--primary: 28 80% 55%;
+		--primary-foreground: 215 32% 8%;
+		--secondary: 214 16% 18%;
+		--secondary-foreground: 38 24% 94%;
+		--muted: 214 14% 19%;
+		--muted-foreground: 36 12% 70%;
+		--accent: 204 27% 55%;
+		--accent-foreground: 215 32% 8%;
+		--neon-cyan: 28 80% 55%;
+		--neon-purple: 39 55% 62%;
+		--neon-orange: 28 80% 55%;
+		--tactical-blue: 204 31% 42%;
+		--success: 136 55% 46%;
+		--warning: 43 85% 58%;
+		--destructive: 3 72% 57%;
+		--destructive-foreground: 38 24% 96%;
+		--border: 211 17% 26%;
+		--input: 213 18% 18%;
+		--ring: 28 80% 55%;
+		--gradient-primary: linear-gradient(135deg, hsl(28 80% 55%) 0%, hsl(39 55% 62%) 100%);
+		--gradient-secondary: linear-gradient(135deg, hsl(204 31% 31%) 0%, hsl(28 80% 55%) 100%);
+		--gradient-background:
+			radial-gradient(circle at 12% 12%, hsl(28 80% 50% / 0.17), transparent 28rem),
+			radial-gradient(circle at 86% 8%, hsl(204 27% 55% / 0.14), transparent 25rem),
+			linear-gradient(135deg, hsl(214 25% 7%) 0%, hsl(213 20% 11%) 48%, hsl(218 22% 8%) 100%);
+		--crosshair-preview-bg: 214 18% 14%;
+		--crosshair-color: 28 80% 55%;
+		--grid-color: 39 35% 76%;
+	}
+
+	:root[data-palette='crimson'],
+	.dark[data-palette='crimson'] {
+		--background: 344 22% 7%;
+		--foreground: 350 18% 95%;
+		--card: 344 18% 11%;
+		--card-foreground: 350 18% 95%;
+		--popover: 344 19% 12%;
+		--popover-foreground: 350 18% 95%;
+		--primary: 345 52% 38%;
+		--primary-foreground: 0 0% 100%;
+		--secondary: 344 13% 17%;
+		--secondary-foreground: 350 18% 95%;
+		--muted: 344 11% 18%;
+		--muted-foreground: 350 11% 70%;
+		--accent: 352 31% 65%;
+		--accent-foreground: 344 28% 8%;
+		--neon-cyan: 352 31% 65%;
+		--neon-purple: 345 52% 38%;
+		--neon-orange: 358 40% 59%;
+		--tactical-blue: 344 31% 35%;
+		--success: 145 55% 48%;
+		--warning: 43 94% 59%;
+		--destructive: 0 78% 58%;
+		--destructive-foreground: 0 0% 100%;
+		--border: 344 16% 25%;
+		--input: 344 17% 17%;
+		--ring: 345 52% 38%;
+		--gradient-primary: linear-gradient(135deg, hsl(345 52% 38%) 0%, hsl(352 31% 65%) 100%);
+		--gradient-secondary: linear-gradient(135deg, hsl(344 38% 25%) 0%, hsl(345 52% 38%) 100%);
+		--gradient-background:
+			radial-gradient(circle at 12% 12%, hsl(345 52% 34% / 0.17), transparent 28rem),
+			radial-gradient(circle at 86% 8%, hsl(352 31% 65% / 0.09), transparent 25rem),
+			linear-gradient(135deg, hsl(344 26% 6%) 0%, hsl(342 20% 10%) 48%, hsl(348 22% 7%) 100%);
+		--crosshair-preview-bg: 344 17% 13%;
+		--crosshair-color: 345 52% 38%;
+		--grid-color: 352 24% 73%;
 	}
 }
 
@@ -95,8 +172,8 @@
 		z-index: -1;
 		pointer-events: none;
 		background-image:
-			linear-gradient(hsl(0 0% 100% / 0.035) 1px, transparent 1px),
-			linear-gradient(90deg, hsl(0 0% 100% / 0.025) 1px, transparent 1px);
+			linear-gradient(hsl(var(--grid-color) / 0.04) 1px, transparent 1px),
+			linear-gradient(90deg, hsl(var(--grid-color) / 0.03) 1px, transparent 1px);
 		background-size: 48px 48px;
 		mask-image: linear-gradient(to bottom, black, transparent 85%);
 	}

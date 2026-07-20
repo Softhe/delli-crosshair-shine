@@ -10,6 +10,7 @@ vi.mock('@/lib/clipboard', () => ({
 }));
 
 const VALID_CODE = 'CSGO-RBZih-6Hynp-ieuGe-tTkVz-9PqNO';
+const DOT_CODE = 'CSGO-zDZH2-jXXvr-yFaQu-OjXPS-G8sdA';
 
 const LocationProbe = () => {
 	const location = useLocation();
@@ -38,16 +39,42 @@ const renderStudio = (initialEntry = '/') => render(
 describe('CS2 Crosshair Studio', () => {
 	beforeEach(() => {
 		vi.mocked(copyToClipboard).mockClear();
+		localStorage.removeItem('cs2_studio_palette');
+		delete document.documentElement.dataset.palette;
 	});
 
-	it('presents import, customization, preview, and export in one workspace', () => {
+	it('presents import, customization, preview, and export in one workspace', async () => {
 		renderStudio();
+		const controlCenter = screen.getByTestId('control-center');
 		expect(screen.getByRole('heading', { name: 'CS2 Crosshair Studio' })).toBeInTheDocument();
-		expect(screen.getByLabelText('CS2 crosshair share code')).toBeInTheDocument();
-		expect(screen.getByRole('slider', { name: 'Length' })).toBeInTheDocument();
-		expect(screen.getAllByRole('img', { name: 'Custom crosshair preview' })).toHaveLength(2);
-		expect(screen.getByRole('button', { name: 'Copy command' })).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: 'Download CFG' })).toBeInTheDocument();
+		expect(within(controlCenter).getByLabelText('CS2 crosshair share code')).toBeInTheDocument();
+		expect(within(controlCenter).getByRole('slider', { name: 'Length' })).toBeInTheDocument();
+		const sliderStack = within(controlCenter).getByTestId('slider-stack');
+		expect(within(sliderStack).getAllByRole('slider')).toEqual([
+			screen.getByRole('slider', { name: 'Length' }),
+			screen.getByRole('slider', { name: /^Thickness$/ }),
+			screen.getByRole('slider', { name: 'Gap' }),
+			screen.getByRole('slider', { name: 'Outline thickness' }),
+			screen.getByRole('slider', { name: 'Alpha' })
+		]);
+		expect(within(controlCenter).getByRole('img', { name: 'Custom crosshair preview' })).toBeInTheDocument();
+		expect(within(controlCenter).getByTestId('preview-workspace')).toBeInTheDocument();
+		expect(within(controlCenter).getByRole('button', { name: 'Copy command' })).toBeInTheDocument();
+		expect(within(controlCenter).getByRole('button', { name: 'Download CFG' })).toBeInTheDocument();
+		expect(within(controlCenter).getByLabelText(/Alias name/)).toBeInTheDocument();
+		expect(await screen.findByRole('heading', { name: 'Local crosshair library' })).toBeInTheDocument();
+		expect(screen.getByRole('tab', { name: 'Recent (0)' })).toBeInTheDocument();
+		expect(screen.getByText('Load a share code or export your current crosshair to save it here.')).toBeInTheDocument();
+		const mobileOrder = [
+			within(controlCenter).getByTestId('import-controls'),
+			within(controlCenter).getByTestId('customize-controls'),
+			within(controlCenter).getByTestId('preview-workspace'),
+			within(controlCenter).getByTestId('export-controls'),
+			screen.getByTestId('local-crosshair-library')
+		];
+		for (let index = 1; index < mobileOrder.length; index += 1) {
+			expect(mobileOrder[index - 1].compareDocumentPosition(mobileOrder[index]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+		}
 		expect(screen.queryByText('Create Custom')).not.toBeInTheDocument();
 		expect(screen.queryByText('Open in converter')).not.toBeInTheDocument();
 	});
@@ -61,13 +88,60 @@ describe('CS2 Crosshair Studio', () => {
 		expect(screen.getByRole('button', { name: 'Copy code' })).toBeInTheDocument();
 	});
 
-	it('reveals dependent controls only when advanced options require them', async () => {
+	it('switches between CS2 and calm Crimson palettes and persists the selection', async () => {
 		const user = userEvent.setup();
 		renderStudio();
-		expect(screen.queryByRole('slider', { name: 'Outline thickness' })).not.toBeInTheDocument();
-		await user.click(screen.getByText('Advanced options'));
+		expect(screen.getByRole('button', { name: 'Tactical' })).toHaveAttribute('aria-pressed', 'true');
+
+		await user.click(screen.getByRole('button', { name: 'CS2' }));
+		expect(document.documentElement).toHaveAttribute('data-palette', 'cs2');
+		expect(localStorage.getItem('cs2_studio_palette')).toBe('cs2');
+		expect(screen.getByRole('button', { name: 'CS2' })).toHaveAttribute('aria-pressed', 'true');
+
+		await user.click(screen.getByRole('button', { name: 'Crimson' }));
+		expect(document.documentElement).toHaveAttribute('data-palette', 'crimson');
+		expect(localStorage.getItem('cs2_studio_palette')).toBe('crimson');
+		expect(screen.getByRole('button', { name: 'Crimson' })).toHaveAttribute('aria-pressed', 'true');
+	});
+
+	it.each(['ultraviolet', 'ember', 'cobalt'])('falls back to Tactical when obsolete palette %s was stored', (obsoletePalette) => {
+		localStorage.setItem('cs2_studio_palette', obsoletePalette);
+		renderStudio();
+		expect(document.documentElement).toHaveAttribute('data-palette', 'tactical');
+		expect(localStorage.getItem('cs2_studio_palette')).toBe('tactical');
+		expect(screen.getByRole('button', { name: 'Tactical' })).toHaveAttribute('aria-pressed', 'true');
+	});
+
+	it('keeps all match-critical controls visible and disables only inapplicable values', async () => {
+		const user = userEvent.setup();
+		renderStudio();
+		expect(screen.getByRole('checkbox', { name: 'Center dot' })).toBeInTheDocument();
+		expect(screen.getByRole('checkbox', { name: 'Outline' })).toBeInTheDocument();
+		expect(screen.getByRole('checkbox', { name: 'Use alpha' })).toBeInTheDocument();
+		expect(screen.getByRole('slider', { name: 'Gap' })).toBeInTheDocument();
+		expect(screen.getByRole('slider', { name: 'Thickness' })).toBeInTheDocument();
+		expect(screen.getByRole('slider', { name: 'Outline thickness' })).toHaveAttribute('aria-disabled', 'true');
+		expect(screen.getByRole('slider', { name: 'Alpha' })).toHaveAttribute('aria-valuenow', '255');
 		await user.click(screen.getByRole('checkbox', { name: 'Outline' }));
-		expect(screen.getByRole('slider', { name: 'Outline thickness' })).toBeInTheDocument();
+		expect(screen.getByRole('slider', { name: 'Outline thickness' })).not.toHaveAttribute('aria-disabled', 'true');
+		await user.click(screen.getByRole('checkbox', { name: 'Use alpha' }));
+		expect(screen.getByRole('slider', { name: 'Alpha' })).toHaveAttribute('aria-disabled', 'true');
+	});
+
+	it('uses the requested share code and settings for the Dot preset', async () => {
+		const user = userEvent.setup();
+		renderStudio();
+		await user.click(screen.getByRole('button', { name: 'Dot' }));
+
+		expect(screen.getByLabelText('CS2 crosshair share code')).toHaveValue(DOT_CODE);
+		expect(screen.getByRole('slider', { name: 'Length' })).toHaveAttribute('aria-valuenow', '0');
+		expect(screen.getByRole('slider', { name: 'Thickness' })).toHaveAttribute('aria-valuenow', '1');
+		expect(screen.getByRole('slider', { name: 'Gap' })).toHaveAttribute('aria-valuenow', '-5');
+		expect(screen.getByRole('slider', { name: 'Outline thickness' })).toHaveAttribute('aria-valuenow', '1');
+		expect(screen.getByRole('slider', { name: 'Alpha' })).toHaveAttribute('aria-valuenow', '255');
+		expect(screen.getByRole('checkbox', { name: 'Center dot' })).toBeChecked();
+		expect(screen.getByRole('checkbox', { name: 'Outline' })).toBeChecked();
+		expect(screen.getByRole('checkbox', { name: 'Use alpha' })).toBeChecked();
 	});
 
 	it('announces an invalid import without replacing the active output', async () => {
@@ -107,10 +181,25 @@ describe('CS2 Crosshair Studio', () => {
 		expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 		expect(input).toHaveValue(VALID_CODE);
 		await waitFor(() => expect(screen.getByLabelText('current route')).toHaveTextContent(`/?code=${VALID_CODE}`));
+		expect(await screen.findByRole('tab', { name: 'Recent (1)' })).toBeInTheDocument();
+		const importedItem = screen.getByTestId('history-item');
+		expect(importedItem).toHaveAttribute('data-activity', 'imported');
+		expect(within(importedItem).getByText('Loaded')).toBeInTheDocument();
+		expect(within(importedItem).getByText(VALID_CODE)).toBeInTheDocument();
 
 		firstRender.unmount();
 		renderStudio();
 		expect(screen.getByLabelText('CS2 crosshair share code')).toHaveValue(VALID_CODE);
+		expect(screen.getByRole('tab', { name: 'Recent (1)' })).toBeInTheDocument();
+	});
+
+	it('records external share-code URLs as locally loaded history', async () => {
+		renderStudio(`/?code=${VALID_CODE}`);
+		expect(await screen.findByRole('tab', { name: 'Recent (1)' })).toBeInTheDocument();
+		const item = screen.getByTestId('history-item');
+		expect(item).toHaveAttribute('data-activity', 'imported');
+		expect(within(item).getByText('Loaded')).toBeInTheDocument();
+		expect(within(item).getByText(VALID_CODE)).toBeInTheDocument();
 	});
 
 	it('gives a URL code precedence and does not restore it after an edit', async () => {
@@ -174,13 +263,16 @@ describe('CS2 Crosshair Studio', () => {
 
 		await user.click(screen.getByRole('button', { name: 'Copy code' }));
 		expect(copyToClipboard).toHaveBeenLastCalledWith(code);
+		expect(await screen.findByRole('tab', { name: 'Recent (1)' })).toBeInTheDocument();
+		expect(screen.getByTestId('history-item')).toHaveAttribute('data-activity', 'exported');
+		expect(within(screen.getByTestId('history-item')).getByText('Exported')).toBeInTheDocument();
 
 		await user.click(screen.getByRole('button', { name: 'Share link' }));
 		expect(copyToClipboard).toHaveBeenLastCalledWith(`${window.location.origin}/?code=${code}`);
 
 		await user.click(screen.getByRole('button', { name: 'Copy command' }));
 		expect(copyToClipboard).toHaveBeenLastCalledWith(expect.stringContaining('host_writeconfig'));
-		expect(await screen.findByRole('tab', { name: 'Recent (1)' })).toBeInTheDocument();
+		expect(screen.getByRole('tab', { name: 'Recent (1)' })).toBeInTheDocument();
 	});
 
 	it('adds generated crosshairs to history and favorites without duplicate load targets', async () => {
@@ -207,9 +299,9 @@ describe('CS2 Crosshair Studio', () => {
 		Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: revokeObjectURL });
 
 		renderStudio();
-		await user.click(screen.getByText('Optional alias and filename'));
-		await user.type(screen.getByLabelText('Alias name'), 'team green');
+		await user.type(screen.getByLabelText(/Alias name/), 'team green');
 		expect(screen.getByText('crosshair_team_green.cfg')).toBeInTheDocument();
+		expect(screen.getByText('alias "team_green" "exec crosshair_team_green.cfg"')).toBeInTheDocument();
 		await user.click(screen.getByRole('button', { name: 'Download CFG' }));
 
 		expect(downloadedFileName).toBe('crosshair_team_green.cfg');

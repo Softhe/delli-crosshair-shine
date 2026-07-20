@@ -9,13 +9,19 @@ Notable changes to CS2 Crosshair Studio are recorded here. Dates and version num
 - A unified studio for importing, creating, editing, previewing, sharing, and exporting a crosshair from one page.
 - Crosshair presets and controls for length, gap, thickness, color, opacity, outline, center dot, and T style.
 - Live generation of share codes, console commands, config files, share links, and optional aliases.
-- Draft persistence plus recent-history and favorites storage in the browser.
+- Draft persistence plus an always-visible local library for recently loaded or exported crosshairs and favorites.
 - Canonical query-based share links using `/?code=CSGO-...`.
 - Automated type checking and production-browser smoke coverage in the release gate.
 - Build-artifact verification and a post-deployment production route smoke test.
+- Switchable deep-teal Tactical, Counter-Strike-inspired CS2, and calm wine-red Crimson redesigns with persistent palette selection.
 
 ### Changed
 
+- The Dot preset now uses `CSGO-zDZH2-jXXvr-yFaQu-OjXPS-G8sdA` exactly.
+- Match-critical dot, gap, thickness, outline, outline-thickness, alpha-toggle, and alpha-value controls are always visible in the creator.
+- Length, Thickness, Gap, Outline thickness, and Alpha now form one ordered, left-aligned slider stack.
+- The CFG filename and autoexec alias workflow is now visible beside the export actions instead of being hidden in an optional panel.
+- Import, preset, customization, reset, preview, export, filename, and alias tools now share one continuous two-column workspace with no detached panels.
 - `/custom` is now a compatibility redirect to the unified root studio and preserves query strings and hashes.
 - Only valid legacy `/:shareCode` paths open the studio; unrelated single-segment paths show the not-found page.
 - The social preview image is now an optimized JPEG referenced consistently by page metadata and build verification.

@@ -1,9 +1,12 @@
 // Storage utility for managing crosshair history and favorites
 
+export type CrosshairHistoryActivity = 'imported' | 'exported';
+
 export interface CrosshairData {
 	id: string;
 	shareCode: string;
 	aliasName?: string;
+	activity?: CrosshairHistoryActivity;
 	timestamp: number;
 	isFavorite?: boolean;
 	settings?: {
@@ -28,7 +31,7 @@ const STORAGE_KEYS = {
 
 const MAX_HISTORY_ITEMS = 20;
 const MAX_FAVORITE_ITEMS = 50;
-const CURRENT_STORAGE_VERSION = '2.0';
+const CURRENT_STORAGE_VERSION = '3.0';
 
 interface StorageExportData {
 	version: string;
@@ -57,6 +60,7 @@ const normalizeCrosshairData = (items: unknown, isFavorite = false): CrosshairDa
 			id: typeof item.id === 'string' ? item.id : generateCrosshairId(item.shareCode),
 			timestamp: typeof item.timestamp === 'number' ? item.timestamp : Date.now(),
 			isFavorite: item.isFavorite ?? isFavorite,
+			activity: item.activity === 'imported' || item.activity === 'exported' ? item.activity : undefined,
 		}));
 };
 
@@ -67,6 +71,7 @@ const migrateStorageData = (data: unknown): StorageExportData => {
 	switch (version) {
 		case '1.0':
 		case '2.0':
+		case '3.0':
 			return {
 				version: CURRENT_STORAGE_VERSION,
 				exportDate: typeof storageData.exportDate === 'string' ? storageData.exportDate : undefined,

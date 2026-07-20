@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Clock, Star, Trash2, Download, Copy, Share2 } from 'lucide-react';
+import { Clock, Star, Trash2, Download, Copy, Share2, Database, Search, Upload } from 'lucide-react';
 import { getHistory, getFavorites, removeFromHistory, toggleFavorite, isFavorited } from '@/lib/storage';
 import type { CrosshairData } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
@@ -38,6 +38,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 			const isFav = toggleFavorite({
 				shareCode: crosshair.shareCode,
 				aliasName: crosshair.aliasName,
+				activity: crosshair.activity,
 				settings: crosshair.settings,
 			});
 
@@ -106,10 +107,10 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 		const isFav = isFavorited(item.shareCode);
 
 		return (
-			<div className="group rounded-lg border border-tactical-blue/20 bg-secondary/30 p-4 transition-all duration-200 hover:border-neon-cyan/30 hover:bg-secondary/50">
+			<div data-testid="history-item" data-activity={item.activity} className="group rounded-lg border border-tactical-blue/20 bg-secondary/30 p-4 transition-all duration-200 hover:border-neon-cyan/30 hover:bg-secondary/50">
 				<div className="flex items-start justify-between gap-3">
 					<div className="flex-1 min-w-0">
-						<div className="flex items-center gap-2 mb-2">
+						<div className="mb-2 flex flex-wrap items-center gap-2">
 							{item.aliasName && (
 								<span className="text-sm font-semibold text-neon-cyan">
 									{item.aliasName}
@@ -119,6 +120,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 								<Clock className="w-3 h-3" />
 								{formatDate(item.timestamp)}
 							</span>
+							{item.activity && <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">{item.activity === 'imported' ? <Search className="h-3 w-3" /> : <Upload className="h-3 w-3" />}{item.activity === 'imported' ? 'Loaded' : 'Exported'}</span>}
 						</div>
 						<code className="text-xs text-muted-foreground font-mono block truncate">
 							{item.shareCode}
@@ -192,12 +194,15 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 		);
 	};
 
-	if (history.length === 0 && favorites.length === 0) {
-		return null;
-	}
-
 	return (
-		<Card className="card-gaming animate-[slide-in-up_0.5s_ease-out_0.15s_both]">
+		<Card data-testid="local-crosshair-library" className="card-gaming">
+			<div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+				<div className="flex items-start gap-3">
+					<span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-primary"><Database className="h-4 w-4" /></span>
+					<div><h2 className="text-lg font-semibold text-foreground">Local crosshair library</h2><p className="text-sm text-muted-foreground">Codes you load or export are saved only in this browser.</p></div>
+				</div>
+				<span className="w-fit rounded-full border border-success/25 bg-success/10 px-2.5 py-1 text-xs font-medium text-success">On this device</span>
+			</div>
 			<Tabs defaultValue="recent" className="w-full">
 				<TabsList className="mb-4 grid h-11 w-full grid-cols-2 p-0">
 					<TabsTrigger value="recent" className="flex h-full items-center gap-2">
@@ -215,7 +220,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 						<div className="text-center py-8 text-muted-foreground">
 							<Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
 							<p>No recent crosshairs</p>
-							<p className="text-sm mt-1">Your generated crosshairs will appear here</p>
+							<p className="text-sm mt-1">Load a share code or export your current crosshair to save it here.</p>
 						</div>
 					) : (
 						<ScrollArea className="h-[400px] pr-4">
