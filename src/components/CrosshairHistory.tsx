@@ -106,8 +106,8 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 		const isFav = isFavorited(item.shareCode);
 
 		return (
-			<div className="group relative bg-secondary/30 border border-tactical-blue/20 rounded-lg p-4 hover:bg-secondary/50 hover:border-neon-cyan/30 transition-all duration-200">
-				<div className="relative z-10 flex items-start justify-between gap-3">
+			<div className="group rounded-lg border border-tactical-blue/20 bg-secondary/30 p-4 transition-all duration-200 hover:border-neon-cyan/30 hover:bg-secondary/50">
+				<div className="flex items-start justify-between gap-3">
 					<div className="flex-1 min-w-0">
 						<div className="flex items-center gap-2 mb-2">
 							{item.aliasName && (
@@ -133,12 +133,12 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							</div>
 						)}
 					</div>
-					<div className="relative z-20 flex items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+					<div className="flex items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
 						<Button
 							onClick={() => handleToggleFavorite(item)}
 							variant="ghost"
 							size="icon"
-							className="h-8 w-8"
+							className="h-10 w-10"
 							title={isFav ? "Remove from favorites" : "Add to favorites"}
 							aria-label={`${isFav ? "Remove" : "Add"} ${item.aliasName || "crosshair"} ${isFav ? "from" : "to"} favorites`}
 						>
@@ -148,7 +148,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							onClick={() => handleCopyShareCode(item.shareCode)}
 							variant="ghost"
 							size="icon"
-							className="h-8 w-8"
+							className="h-10 w-10"
 							title="Copy share code"
 							aria-label={`Copy share code for ${item.aliasName || "crosshair"}`}
 						>
@@ -158,7 +158,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							onClick={() => handleCopyShareLink(item.shareCode)}
 							variant="ghost"
 							size="icon"
-							className="h-8 w-8 text-primary hover:text-primary"
+							className="h-10 w-10 text-primary hover:text-primary"
 							title="Copy share link"
 							aria-label={`Copy share link for ${item.aliasName || "crosshair"}`}
 						>
@@ -168,7 +168,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							onClick={() => onSelectCrosshair(item.shareCode, item.aliasName)}
 							variant="ghost"
 							size="icon"
-							className="h-8 w-8"
+							className="h-10 w-10"
 							title="Load crosshair"
 							aria-label={`Load ${item.aliasName || "crosshair"}`}
 						>
@@ -179,7 +179,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 								onClick={() => handleDelete(item.id)}
 								variant="ghost"
 								size="icon"
-								className="h-8 w-8 text-destructive hover:text-destructive"
+								className="h-10 w-10 text-destructive hover:text-destructive"
 								title="Remove from history"
 								aria-label={`Remove ${item.aliasName || "crosshair"} from history`}
 							>
@@ -188,12 +188,6 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 						)}
 					</div>
 				</div>
-				<Button
-					onClick={() => onSelectCrosshair(item.shareCode, item.aliasName)}
-					variant="ghost"
-					className="absolute inset-0 z-0 h-full w-full opacity-0"
-					aria-label={`Load ${item.aliasName || "crosshair"}`}
-				/>
 			</div>
 		);
 	};
@@ -205,12 +199,12 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 	return (
 		<Card className="card-gaming animate-[slide-in-up_0.5s_ease-out_0.15s_both]">
 			<Tabs defaultValue="recent" className="w-full">
-				<TabsList className="grid w-full grid-cols-2 mb-4">
-					<TabsTrigger value="recent" className="flex items-center gap-2">
+				<TabsList className="mb-4 grid h-11 w-full grid-cols-2 p-0">
+					<TabsTrigger value="recent" className="flex h-full items-center gap-2">
 						<Clock className="w-4 h-4" />
 						Recent ({history.length})
 					</TabsTrigger>
-					<TabsTrigger value="favorites" className="flex items-center gap-2">
+					<TabsTrigger value="favorites" className="flex h-full items-center gap-2">
 						<Star className="w-4 h-4" />
 						Favorites ({favorites.length})
 					</TabsTrigger>

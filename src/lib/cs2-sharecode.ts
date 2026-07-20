@@ -51,7 +51,7 @@ export function getCrosshairPreviewColor(crosshair: Pick<Crosshair, 'color' | 'r
     case 1:
       return { r: 0, g: 255, b: 0 };
     case 2:
-      return { r: 255, g: 165, b: 0 };
+      return { r: 255, g: 255, b: 0 };
     case 3:
       return { r: 0, g: 0, b: 255 };
     case 4:

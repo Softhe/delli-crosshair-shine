@@ -1,11 +1,11 @@
-import { lazy, Suspense } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { lazy, Suspense } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Toaster } from '@/components/ui/toaster';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { validateShareCode } from '@/lib/crosshair-output';
+import { decodeUrlShareCode } from '@/lib/share-url';
+import Index from '@/pages/Index';
 
-const CustomCrosshair = lazy(() => import("./pages/CustomCrosshair"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const PageFallback = () => (
@@ -14,21 +14,36 @@ const PageFallback = () => (
   </main>
 );
 
+export const LegacyShareCodeRoute = () => {
+  const { shareCode = '' } = useParams();
+  const decodedShareCode = decodeUrlShareCode(shareCode);
+
+  return validateShareCode(decodedShareCode).valid ? <Index /> : <NotFound />;
+};
+
+export const CustomCompatibilityRedirect = () => {
+  const { hash, search } = useLocation();
+  return <Navigate to={{ pathname: '/', search, hash }} replace />;
+};
+
+export const AppRoutes = () => (
+  <Suspense fallback={<PageFallback />}>
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/custom" element={<CustomCompatibilityRedirect />} />
+      <Route path="/:shareCode" element={<LegacyShareCodeRoute />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </Suspense>
+);
+
 function App() {
   return (
     <TooltipProvider>
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <Suspense fallback={<PageFallback />}>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/custom" element={<CustomCrosshair />} />
-            <Route path="/:shareCode" element={<Index />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          </Suspense>
-        </BrowserRouter>
-        <Toaster />
-        <Sonner />
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <AppRoutes />
+      </BrowserRouter>
+      <Toaster />
     </TooltipProvider>
   );
 }
