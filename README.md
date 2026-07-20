@@ -1,114 +1,86 @@
-# CS2 Crosshair Config Generator
+# CS2 Crosshair Studio
 
-A powerful web tool to convert CS2 crosshair share codes into config files instantly. Built with React, TypeScript, and Tailwind CSS.
+CS2 Crosshair Studio is a private, browser-based workspace for importing, editing, previewing, sharing, and exporting Counter-Strike 2 crosshairs. The application is built with React, TypeScript, Vite, and Tailwind CSS and is published at [delli.cc](https://delli.cc/).
 
-## 🎯 Features
+## Features
 
-- ✨ **Instant Conversion**: Convert CS2 share codes to config files in seconds
-- 📁 **History & Favorites**: Automatically saves your last 20 crosshairs and bookmark favorites
-- 📋 **Copy to Clipboard**: Copy config text directly without downloading files
-- ⌨️ **Keyboard Shortcuts**: Speed up your workflow with hotkeys (Ctrl+Enter to generate)
-- 🎨 **Live Preview**: See your crosshair before generating the config
-- ❓ **Comprehensive FAQ**: Built-in help section answering common questions
-- 📱 **Fully Responsive**: Works perfectly on desktop, tablet, and mobile
-- 🔒 **100% Private**: All processing happens locally in your browser
-- 🎮 **Gaming UI**: Beautiful dark theme with neon accents
+- Import and validate CS2 `CSGO-...` crosshair share codes.
+- Start from a preset and edit length, gap, thickness, color, opacity, outline, center dot, and T style.
+- Preview changes immediately and generate a new share code from the edited values.
+- Copy a console command, share code, or canonical share link, or download a `.cfg` file.
+- Optionally generate a safe config filename and console alias.
+- Keep up to 20 recent exports and 50 favorites in browser storage.
+- Restore the latest draft after a refresh and reset it when needed.
+- Use `Ctrl+Enter` or `Cmd+Enter` to copy the current console command.
 
-## Live site
+All decoding, editing, persistence, and file generation happen in the browser. The live preview is an approximation; resolution and in-game rendering can produce small visual differences.
 
-**URL**: https://delli.cc/
+## Routes and links
 
-## How can I edit this code?
+| Route | Purpose |
+| --- | --- |
+| `/` | Unified studio. With no URL code, it restores the local draft or opens the default crosshair. |
+| `/?code=CSGO-...` | Canonical share link. |
+| `/?crosshair=CSGO-...` | Supported compatibility query. |
+| `/custom` | Compatibility route that redirects to `/` while preserving its query string and hash. |
+| `/CSGO-...` | Legacy path-based share link. Valid codes still open in the studio. |
+| Any other path | Not-found page. |
 
-Clone the repository and work locally with Node.js 20 or newer and pnpm 11.7.0. Enable pnpm with `corepack enable` if it is not already available.
+Use query-based share links for new links. On GitHub Pages, a legacy path can be served through `404.html`, so the app can load it even though the initial document response may retain a 404 status.
 
-**Use your preferred IDE**
+## Development
 
-If you want to work locally using your own IDE, clone this repository and push changes through the normal GitHub workflow.
+Requirements:
 
-Follow these steps:
+- Node.js 20 or newer
+- pnpm 11.7.0 (the version pinned in `package.json`)
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
+corepack enable
 pnpm install
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
 pnpm dev
 ```
 
-**Edit a file directly in GitHub**
+Vite prints the local development URL, normally `http://localhost:5173` or the next available port.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Useful commands:
 
-**Use GitHub Codespaces**
+| Command | Purpose |
+| --- | --- |
+| `pnpm dev` | Start the Vite development server. |
+| `pnpm lint` | Run ESLint. |
+| `pnpm typecheck` | Type-check the application and Vite configuration. |
+| `pnpm test` | Run the Vitest unit and component suite once. |
+| `pnpm test:watch` | Run Vitest in watch mode. |
+| `pnpm test:utils` | Verify share-code and preview utility invariants. |
+| `pnpm test:e2e` | Build the site, then run the Playwright smoke tests at desktop and mobile widths. |
+| `pnpm build` | Build `dist/`, prepare compatibility pages, and verify the production artifacts. |
+| `pnpm preview` | Serve the production build locally. |
+| `pnpm verify:build` | Verify the files and metadata in an existing `dist/`. |
+| `pnpm smoke:production` | Probe the deployed `https://delli.cc` routes and metadata. |
+| `pnpm check` | Run the required local release gate. |
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Project structure
 
-## What technologies are used for this project?
+```text
+src/pages/                 Route-level studio and not-found pages
+src/components/            Preview, history, FAQ, and reusable UI
+src/lib/                   Share-code, output, URL, storage, and preview logic
+src/**/*.test.{ts,tsx}     Unit and component tests
+e2e/                       Production-browser smoke tests
+scripts/                   Utility checks and static-page preparation
+public/                    Metadata, icons, crawler files, and CNAME
+.github/workflows/         Continuous integration and GitHub Pages deployment
+```
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+See [Architecture](docs/ARCHITECTURE.md), [Testing](docs/TESTING.md), and [Release and deployment](docs/RELEASE.md) for the maintained project documentation.
 
 ## Deployment
 
-Merges to `main` are verified by CI and deployed to GitHub Pages by `.github/workflows/deploy.yml`. The production build includes the `delli.cc` custom-domain file, sitemap, crawler rules, a real static `/custom` entry, and a `404.html` fallback for old path-based share links.
+Pull requests and pushes to `main` run the main gate and Playwright smoke suite. A push to `main` also deploys the verified `dist/` artifact to GitHub Pages and probes the live site afterward. The build includes the `delli.cc` custom-domain declaration, crawler metadata, optimized `og-image.jpg`, `/custom` compatibility files, and a `404.html` app fallback for legacy share-code paths.
 
-Run the same release checks locally before merging:
+Run `pnpm check` and `pnpm test:e2e` before merging. After deployment, follow the production smoke checklist in [docs/RELEASE.md](docs/RELEASE.md).
 
-```sh
-pnpm check
-```
+## License
 
-New crosshair links use `https://delli.cc/?code=CSGO-...`. Keeping the code in the query string means GitHub Pages serves the root page with HTTP 200. Existing `https://delli.cc/CSGO-...` links are still understood by the app after the Pages fallback loads, but the fallback itself may retain a 404 HTTP status.
-
-The custom domain is declared in `public/CNAME`. DNS and the GitHub repository's Pages settings must continue to point `delli.cc` at this Pages site.
-
-## 📚 Documentation
-
-For detailed information about the new UI/UX enhancements:
-
-- **[Enhancement Summary](ENHANCEMENTS_SUMMARY.md)** - Overview of all new features
-- **[UI/UX Documentation](docs/UI_UX_ENHANCEMENTS.md)** - Detailed technical documentation
-- **[Visual Guide](docs/VISUAL_GUIDE.md)** - Layout and design specifications
-- **[Quick Reference](docs/QUICK_REFERENCE.md)** - Developer quick reference
-
-## 🚀 New in Version 2.0
-
-- **History System**: Automatically saves your last 20 generated crosshairs
-- **Favorites**: Bookmark your favorite crosshairs for quick access
-- **Copy to Clipboard**: Alternative to downloading config files
-- **Keyboard Shortcuts**: Ctrl+Enter to generate, plus more shortcuts
-- **FAQ Section**: Comprehensive answers to common questions
-- **Enhanced Layout**: Two-column design with sticky sidebar
-- **Better Mobile**: Fully optimized for mobile devices
-- **Improved Validation**: Real-time feedback with visual indicators
-
-## 🎨 Built With
-
-- **React 18** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **Tailwind CSS** - Styling
-- **shadcn-ui** - Component library
-- **Lucide React** - Icons
-
-## 📄 License
-
-Built by delli.cc
+Built by delli.cc. No separate open-source license is declared in this repository.

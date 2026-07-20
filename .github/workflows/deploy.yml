@@ -11,6 +11,9 @@ concurrency:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     permissions:
       contents: read
       pages: write
@@ -25,8 +28,12 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      - run: pnpm check
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
       - uses: actions/deploy-pages@v4
+        id: deployment
+      - run: pnpm smoke:production

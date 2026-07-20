@@ -44,7 +44,7 @@ assert.equal(config.getSafeAliasCommandName(''), 'mycrosshair');
 assert.equal(config.createAliasCommand('og small', 'crosshair_og_small.cfg'), 'alias "og_small" "exec crosshair_og_small.cfg"');
 assert.equal(JSON.stringify(cs2.getCrosshairPreviewColor({ color: 5, red: 255, green: 255, blue: 255 })), JSON.stringify({ r: 255, g: 255, b: 255 }));
 assert.equal(JSON.stringify(cs2.getCrosshairPreviewColor({ color: 4, red: 255, green: 255, blue: 255 })), JSON.stringify({ r: 0, g: 255, b: 255 }));
-assert.equal(JSON.stringify(cs2.getCrosshairPreviewColor({ color: 2, red: 255, green: 255, blue: 255 })), JSON.stringify({ r: 255, g: 165, b: 0 }));
+assert.equal(JSON.stringify(cs2.getCrosshairPreviewColor({ color: 2, red: 255, green: 255, blue: 255 })), JSON.stringify({ r: 255, g: 255, b: 0 }));
 
 const sampleCrosshair = cs2.decodeCrosshairShareCode('CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA');
 const roundTripCrosshair = cs2.decodeCrosshairShareCode(cs2.encodeCrosshair(sampleCrosshair));

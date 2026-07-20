@@ -3,6 +3,7 @@ import {
 	crosshairToConVars,
 	decodeCrosshairShareCode,
 	encodeCrosshair,
+	getCrosshairPreviewColor,
 	InvalidCrosshairShareCode,
 	InvalidShareCode,
 	type Crosshair,
@@ -72,5 +73,14 @@ describe('CS2 crosshair share-code corpus', () => {
 	it('distinguishes malformed codes from checksum failures', () => {
 		expect(() => decodeCrosshairShareCode('not-a-share-code')).toThrow(InvalidShareCode);
 		expect(() => decodeCrosshairShareCode('CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPB')).toThrow(InvalidCrosshairShareCode);
+	});
+
+	it('maps the built-in palette to canonical RGB colors', () => {
+		expect(getCrosshairPreviewColor({ color: 0, red: 0, green: 0, blue: 0 })).toEqual({ r: 255, g: 0, b: 0 });
+		expect(getCrosshairPreviewColor({ color: 1, red: 0, green: 0, blue: 0 })).toEqual({ r: 0, g: 255, b: 0 });
+		expect(getCrosshairPreviewColor({ color: 2, red: 0, green: 0, blue: 0 })).toEqual({ r: 255, g: 255, b: 0 });
+		expect(getCrosshairPreviewColor({ color: 3, red: 0, green: 0, blue: 0 })).toEqual({ r: 0, g: 0, b: 255 });
+		expect(getCrosshairPreviewColor({ color: 4, red: 0, green: 0, blue: 0 })).toEqual({ r: 0, g: 255, b: 255 });
+		expect(getCrosshairPreviewColor({ color: 5, red: 12, green: 34, blue: 56 })).toEqual({ r: 12, g: 34, b: 56 });
 	});
 });

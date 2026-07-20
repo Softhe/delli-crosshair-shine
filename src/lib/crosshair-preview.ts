@@ -39,13 +39,15 @@ export const getCrosshairPreviewMetrics = (crosshair: Crosshair): CrosshairPrevi
 	const safeCrosshair = clampCrosshair(crosshair);
 	const gameLengthPx = safeCrosshair.length * 10;
 	const gameThicknessPx = Math.max(1, safeCrosshair.thickness * 2);
-	const naturalSpan = Math.max(gameLengthPx * 2 + 12, gameThicknessPx);
-	const autoScale = Math.min(6, Math.max(1, 34 / naturalSpan, 2 / gameThicknessPx));
+	const naturalSpan = Math.max(gameLengthPx * 2 + 12, 1);
+	const autoScale = Math.min(6, Math.max(1, 34 / naturalSpan));
 	const length = gameLengthPx * autoScale;
 	const thickness = gameThicknessPx * autoScale;
 	const rawEdgeGap = (safeCrosshair.gap + 4) * autoScale;
 	const edgeGap = Math.max(rawEdgeGap, -Math.max(0, length - thickness));
-	const outlineThickness = safeCrosshair.outlineEnabled ? Math.max(0.5, safeCrosshair.outline * autoScale) : 0;
+	const outlineThickness = safeCrosshair.outlineEnabled && safeCrosshair.outline > 0
+		? Math.max(0.5, safeCrosshair.outline * autoScale)
+		: 0;
 
 	return {
 		length,
