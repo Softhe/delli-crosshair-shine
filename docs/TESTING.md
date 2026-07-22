@@ -42,7 +42,7 @@ Playwright runs Chromium at 1280×720 and 390×844. The current suite verifies:
 - The unified studio loads without browser errors or horizontal overflow and keeps the editor ahead of the preview on mobile.
 - Mobile preview and autoexec disclosures open correctly, while fixed quick actions remain accessible.
 - A preset updates the selected color, preview, share code, URL, and persisted draft.
-- Code and link copying, aliased config download, recent history, and favorites.
+- Code and link copying, aliased config download, recent history, favorites, library search, inline naming, and JSON backup import/export.
 - `/custom` query/hash preservation, a valid legacy path, and an invalid single-segment path.
 - No automatically detectable WCAG 2.0/2.1 A or AA violations on the initial studio.
 - Theme palettes retain their intended tokens and remain free of automatically detectable WCAG A/AA violations.
@@ -63,6 +63,7 @@ Playwright runs Chromium at 1280×720 and 390×844. The current suite verifies:
 - Presets and individual controls update all derived outputs.
 - Reset returns to the default and clears the persisted draft.
 - Copy and download actions create history; history selection and favorites restore the right code.
+- Library search filters by alias and share code; renaming keeps history and favorites in sync; JSON backups restore history, favorites, and settings.
 - Clipboard failures produce feedback without breaking the page.
 - `Ctrl+Enter` and `Cmd+Enter` copy the current console command.
 

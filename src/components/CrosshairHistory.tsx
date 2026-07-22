@@ -1,9 +1,10 @@
-import { useState, type MouseEvent } from 'react';
+import { useRef, useState, type ChangeEvent, type MouseEvent } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Clock, Star, Trash2, Download, Copy, Share2, Database, Search, Upload } from 'lucide-react';
-import { getHistory, getFavorites, removeFromHistory, toggleFavorite, isFavorited } from '@/lib/storage';
+import { Clock, Star, Trash2, Download, Copy, Share2, Database, Search, Upload, FileDown, FileUp } from 'lucide-react';
+import { exportAllData, getHistory, getFavorites, importAllData, removeFromHistory, renameHistoryItem, toggleFavorite, isFavorited } from '@/lib/storage';
 import type { CrosshairData } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,11 +18,63 @@ interface CrosshairHistoryProps {
 export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) => {
 	const [history, setHistory] = useState<CrosshairData[]>(getHistory());
 	const [favorites, setFavorites] = useState<CrosshairData[]>(getFavorites());
+	const [query, setQuery] = useState('');
+	const [draftAliases, setDraftAliases] = useState<Record<string, string>>({});
+	const backupInputRef = useRef<HTMLInputElement>(null);
 	const { toast } = useToast();
 
 	const refreshData = () => {
 		setHistory(getHistory());
 		setFavorites(getFavorites());
+	};
+
+	const matchesQuery = (item: CrosshairData) => {
+		const normalizedQuery = query.trim().toLowerCase();
+		return !normalizedQuery || item.shareCode.toLowerCase().includes(normalizedQuery) || item.aliasName?.toLowerCase().includes(normalizedQuery);
+	};
+
+	const filteredHistory = history.filter(matchesQuery);
+	const filteredFavorites = favorites.filter(matchesQuery);
+
+	const handleRename = (item: CrosshairData) => {
+		const nextAlias = draftAliases[item.id];
+		if (nextAlias === undefined || nextAlias === (item.aliasName || '')) return;
+		renameHistoryItem(item.id, nextAlias);
+		setDraftAliases((current) => {
+			const next = { ...current };
+			delete next[item.id];
+			return next;
+		});
+		refreshData();
+	};
+
+	const handleExportBackup = () => {
+		const blob = new Blob([exportAllData()], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const anchor = document.createElement('a');
+		anchor.href = url;
+		anchor.download = `cs2-crosshair-backup-${new Date().toISOString().slice(0, 10)}.json`;
+		document.body.appendChild(anchor);
+		anchor.click();
+		anchor.remove();
+		URL.revokeObjectURL(url);
+		toast({ title: 'Backup exported', description: 'Your local history and favorites are saved to a JSON file.' });
+	};
+
+	const handleImportBackup = async (event: ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		event.target.value = '';
+		if (!file) return;
+
+		try {
+			const result = importAllData(await file.text());
+			if (!result.success) throw new Error(result.error || 'Invalid backup file');
+			setDraftAliases({});
+			refreshData();
+			toast({ title: 'Backup imported', description: 'Your local history and favorites have been restored.' });
+		} catch (error) {
+			toast({ title: 'Backup import failed', description: error instanceof Error ? error.message : 'Invalid backup file', variant: 'destructive' });
+		}
 	};
 
 	const handleDelete = (id: string) => {
@@ -121,11 +174,17 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 				<div className="flex items-start justify-between gap-3">
 					<div className="flex-1 min-w-0">
 						<div className="mb-2 flex flex-wrap items-center gap-2">
-							{item.aliasName && (
-								<span className="text-sm font-semibold text-neon-cyan">
-									{item.aliasName}
-								</span>
-							)}
+							<Input
+								aria-label={`Name ${item.aliasName || 'crosshair'}`}
+								value={draftAliases[item.id] ?? item.aliasName ?? ''}
+								placeholder="Name this crosshair"
+								maxLength={48}
+								className="h-8 max-w-52 border-white/10 bg-background/50 text-sm font-semibold text-neon-cyan"
+								onClick={(event) => event.stopPropagation()}
+								onChange={(event) => setDraftAliases((current) => ({ ...current, [item.id]: event.target.value }))}
+								onBlur={() => handleRename(item)}
+								onKeyDown={(event) => { if (event.key === 'Enter') event.currentTarget.blur(); }}
+							/>
 							<span className="text-xs text-muted-foreground flex items-center gap-1">
 								<Clock className="w-3 h-3" />
 								{formatDate(item.timestamp)}
@@ -211,7 +270,16 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 					<span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-primary"><Database className="h-4 w-4" /></span>
 					<div><h2 className="text-lg font-semibold text-foreground">Local crosshair library</h2><p className="text-sm text-muted-foreground">Codes you load or export are saved only in this browser.</p></div>
 				</div>
-				<span className="w-fit rounded-full border border-success/25 bg-success/10 px-2.5 py-1 text-xs font-medium text-success">On this device</span>
+				<div className="flex flex-wrap gap-2">
+					<Button type="button" variant="outline" size="sm" onClick={handleExportBackup}><FileDown className="h-4 w-4" />Export backup</Button>
+					<Button type="button" variant="outline" size="sm" onClick={() => backupInputRef.current?.click()}><FileUp className="h-4 w-4" />Import backup</Button>
+					<input ref={backupInputRef} type="file" accept="application/json,.json" className="hidden" onChange={handleImportBackup} aria-label="Import crosshair backup" />
+					<span className="w-fit self-center rounded-full border border-success/25 bg-success/10 px-2.5 py-1 text-xs font-medium text-success">On this device</span>
+				</div>
+			</div>
+			<div className="mb-4">
+				<label htmlFor="history-search" className="sr-only">Search saved crosshairs</label>
+				<div className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="history-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by name or share code" className="pl-9" /></div>
 			</div>
 			<Tabs defaultValue="recent" className="w-full">
 				<TabsList className="mb-4 grid h-11 w-full grid-cols-2 p-0">
@@ -232,10 +300,12 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							<p>No recent crosshairs</p>
 							<p className="text-sm mt-1">Load a share code or export your current crosshair to save it here.</p>
 						</div>
+					) : filteredHistory.length === 0 ? (
+						<div className="text-center py-8 text-muted-foreground"><Search className="w-10 h-10 mx-auto mb-3 opacity-50" /><p>No matching crosshairs</p><p className="text-sm mt-1">Try a different name or share-code fragment.</p></div>
 					) : (
 						<ScrollArea className="max-h-[400px] pr-4">
 							<div className="space-y-3">
-								{history.map((item) => (
+								{filteredHistory.map((item) => (
 									<CrosshairItem key={item.id} item={item} />
 								))}
 							</div>
@@ -250,10 +320,12 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							<p>No favorite crosshairs yet</p>
 							<p className="text-sm mt-1">Click the star icon to save your favorites</p>
 						</div>
+					) : filteredFavorites.length === 0 ? (
+						<div className="text-center py-8 text-muted-foreground"><Search className="w-10 h-10 mx-auto mb-3 opacity-50" /><p>No matching favorites</p><p className="text-sm mt-1">Try a different name or share-code fragment.</p></div>
 					) : (
 						<ScrollArea className="max-h-[400px] pr-4">
 							<div className="space-y-3">
-								{favorites.map((item) => (
+								{filteredFavorites.map((item) => (
 									<CrosshairItem key={item.id} item={item} showDelete={false} />
 								))}
 							</div>

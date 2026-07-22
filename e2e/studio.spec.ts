@@ -244,7 +244,7 @@ test('copies active outputs, downloads the displayed file, and manages favorites
   if (testInfo.project.name === 'mobile-chromium') {
     const libraryBox = await page.getByTestId('local-crosshair-library').boundingBox();
     expect(libraryBox).not.toBeNull();
-    expect(libraryBox!.height).toBeLessThan(420);
+    expect(libraryBox!.height).toBeLessThan(520);
   }
 
   await page.getByRole('button', { name: 'Share link', exact: true }).click();
@@ -304,6 +304,47 @@ test('loads a saved crosshair by left-clicking its history card', async ({ page 
   await historyItem.getByRole('button', { name: 'Remove crosshair from history' }).click();
   await expect(codeInput).toHaveValue(changedCode);
   await expect(historyItem).toHaveCount(0);
+});
+
+test('searches, renames, and backs up the local library', async ({ page }) => {
+  await page.goto('/');
+  const code = await page.getByRole('textbox', { name: 'CS2 crosshair share code', exact: true }).inputValue();
+  await page.getByRole('button', { name: 'Copy code', exact: true }).click();
+  const historyItem = page.getByTestId('history-item');
+  await expect(historyItem).toBeVisible();
+
+  const nameInput = historyItem.locator('input');
+  await expect(nameInput).toHaveCount(1);
+  await nameInput.fill('ranked setup');
+  await nameInput.press('Tab');
+  await expect(nameInput).toHaveValue('ranked setup');
+
+  const search = page.getByRole('textbox', { name: 'Search saved crosshairs', exact: true });
+  await search.fill('ranked');
+  await expect(historyItem).toHaveCount(1);
+  await search.fill('missing');
+  await expect(historyItem).toHaveCount(0);
+  await search.fill('');
+
+  const backupDownloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export backup', exact: true }).click();
+  const backupDownload = await backupDownloadPromise;
+  expect(backupDownload.suggestedFilename()).toMatch(/^cs2-crosshair-backup-\d{4}-\d{2}-\d{2}\.json$/);
+  const backupPath = await backupDownload.path();
+  expect(backupPath).not.toBeNull();
+  const backup = await readFile(backupPath!, 'utf8');
+  expect(backup).toContain(code);
+  expect(backup).toContain('ranked setup');
+
+  await page.getByRole('button', { name: 'Remove ranked setup from history' }).click();
+  await expect(historyItem).toHaveCount(0);
+  await page.getByLabel('Import crosshair backup').setInputFiles({
+    name: 'crosshair-backup.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(backup),
+  });
+  await expect(page.getByTestId('history-item')).toBeVisible();
+  await expect(page.getByTestId('history-item').locator('input')).toHaveValue('ranked setup');
 });
 
 test('pastes valid codes and exposes invalid clipboard values accessibly', async ({ page }) => {

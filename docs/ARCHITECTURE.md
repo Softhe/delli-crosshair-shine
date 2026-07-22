@@ -24,7 +24,7 @@ flowchart LR
 - `src/pages/CustomCrosshair.tsx` owns the current editable crosshair, URL synchronization, actions, and responsive studio layout.
 - `src/components/studio/` contains focused import, customization, preview, autoexec, and mobile-action surfaces.
 - `src/components/CustomCrosshairPreview.tsx` and `CrosshairShape.tsx` render the approximation shown in the editor.
-- `src/components/CrosshairHistory.tsx` presents recent exports and favorites from local storage.
+- `src/components/CrosshairHistory.tsx` presents searchable, renameable recent exports and favorites from local storage, with JSON backup controls.
 
 The older `CS2ConfigGenerator` and its separate preview were removed. New work should target the unified studio and its supporting modules.
 
@@ -51,7 +51,7 @@ The encoded share code is the portable representation of editor state. Editing a
 Browser storage is optional and failure-tolerant:
 
 - `cs2_custom_crosshair_draft` stores the latest editor draft.
-- `cs2_crosshair_history` stores up to 20 recent copied commands or downloaded configs, deduplicated by share code.
+- `cs2_crosshair_history` stores up to 20 recent copied commands or downloaded configs, deduplicated by share code. The library can filter by share code or alias and rename entries without changing their encoded crosshair data.
 - `cs2_crosshair_favorites` stores up to 50 favorites.
 - `cs2_crosshair_settings` is reserved for local user settings and participates in storage import/export.
 

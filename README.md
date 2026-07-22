@@ -10,6 +10,7 @@ CS2 Crosshair Studio is a private, browser-based workspace for importing, editin
 - Copy a console command, share code, or canonical share link, or download a `.cfg` file.
 - Optionally generate a safe config filename and console alias.
 - Keep up to 20 recently loaded or exported crosshairs and 50 favorites in browser storage.
+- Search and rename saved crosshairs, or export/import a local JSON backup.
 - Restore the latest draft after a refresh and reset it when needed.
 - Use `Ctrl+Enter` or `Cmd+Enter` to copy the current console command.
 - On mobile, keep export actions within reach while preview and optional autoexec details stay collapsible.

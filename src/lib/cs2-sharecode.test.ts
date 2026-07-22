@@ -70,6 +70,27 @@ describe('CS2 crosshair share-code corpus', () => {
 		expect(convars).toContain('cl_crosshairstyle "4"');
 	});
 
+	it.each([
+		'CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA',
+		'CSGO-zDZH2-jXXvr-yFaQu-OjXPS-G8sdA',
+		'CSGO-sXMJy-i8zaz-T4jvf-G8Ay7-b2D7K',
+	])('round-trips representative share code %s through editor state', (code) => {
+		expect(encodeCrosshair(decodeCrosshairShareCode(code))).toBe(code);
+	});
+
+	it.each(CROSSHAIR_CORPUS)('emits every supported convar for $name', ({ code }) => {
+		const convars = crosshairToConVars(decodeCrosshairShareCode(code));
+		for (const name of [
+			'cl_crosshair_drawoutline', 'cl_crosshair_dynamic_maxdist_splitratio', 'cl_crosshair_dynamic_splitalpha_innermod',
+			'cl_crosshair_dynamic_splitalpha_outermod', 'cl_crosshair_dynamic_splitdist', 'cl_crosshair_outlinethickness',
+			'cl_crosshair_t', 'cl_crosshairalpha', 'cl_crosshaircolor', 'cl_crosshaircolor_b', 'cl_crosshaircolor_g',
+			'cl_crosshaircolor_r', 'cl_crosshairdot', 'cl_crosshairgap', 'cl_crosshairgap_useweaponvalue', 'cl_crosshairsize',
+			'cl_crosshairstyle', 'cl_crosshairthickness', 'cl_crosshairusealpha', 'cl_fixedcrosshairgap',
+		]) {
+			expect(convars).toContain(`${name} "`);
+		}
+	});
+
 	it('distinguishes malformed codes from checksum failures', () => {
 		expect(() => decodeCrosshairShareCode('not-a-share-code')).toThrow(InvalidShareCode);
 		expect(() => decodeCrosshairShareCode('CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPB')).toThrow(InvalidCrosshairShareCode);

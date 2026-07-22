@@ -7,6 +7,7 @@ import {
 	getUserSettings,
 	importAllData,
 	isFavorited,
+	renameHistoryItem,
 	saveUserSettings,
 	toggleFavorite,
 } from '@/lib/storage';
@@ -35,6 +36,15 @@ describe('crosshair history and favorites persistence', () => {
 		expect(toggleFavorite(favorite)).toBe(false);
 		expect(isFavorited(FIRST_CODE)).toBe(false);
 		expect(getFavorites()).toEqual([]);
+	});
+
+	it('renames a saved crosshair and keeps the favorite alias in sync', () => {
+		addToHistory({ shareCode: FIRST_CODE, aliasName: 'before' });
+		toggleFavorite({ shareCode: FIRST_CODE, aliasName: 'before' });
+		renameHistoryItem(getHistory()[0].id, '  named setup  ');
+
+		expect(getHistory()[0].aliasName).toBe('named setup');
+		expect(getFavorites()[0].aliasName).toBe('named setup');
 	});
 
 	it('exports and restores history, favorites, and settings as one backup', () => {

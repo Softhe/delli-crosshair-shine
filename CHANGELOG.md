@@ -1,8 +1,8 @@
 # Changelog
 
-Notable changes to CS2 Crosshair Studio are recorded here. Dates and version numbers are added when a release is tagged; untagged work remains under **Unreleased**.
+Notable changes to CS2 Crosshair Studio are recorded here.
 
-## Unreleased
+## 2.0.0 - 2026-07-22
 
 ### Added
 
@@ -31,21 +31,6 @@ Notable changes to CS2 Crosshair Studio are recorded here. Dates and version num
 
 - The legacy share-code-only generator, its tests, and its obsolete implementation documentation.
 - Unused UI modules left by the earlier generator interface.
-
-## 2.0.0
-
-### Added
-
-- Local recent-history and favorites lists.
-- Clipboard output and share-link actions.
-- Keyboard shortcuts, inline validation, an FAQ, and responsive layouts.
-- Versioned import and export support in the browser-storage utilities.
-
-### Changed
-
-- Expanded the original converter into a more guided, mobile-friendly workflow.
-- Improved error messages, focus behavior, and action feedback.
-- Added clipboard fallbacks and corrected preview geometry for compact crosshairs and negative gaps.
 
 ## 1.0.0
 
