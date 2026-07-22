@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -105,9 +105,19 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 
 	const CrosshairItem = ({ item, showDelete = true }: { item: CrosshairData; showDelete?: boolean }) => {
 		const isFav = isFavorited(item.shareCode);
+		const handleCardClick = (event: MouseEvent<HTMLDivElement>) => {
+			if ((event.target as HTMLElement).closest('[data-history-actions]')) return;
+			onSelectCrosshair(item.shareCode, item.aliasName);
+		};
 
 		return (
-			<div data-testid="history-item" data-activity={item.activity} className="group rounded-lg border border-tactical-blue/20 bg-secondary/30 p-4 transition-all duration-200 hover:border-neon-cyan/30 hover:bg-secondary/50">
+			<div
+				data-testid="history-item"
+				data-activity={item.activity}
+				onClick={handleCardClick}
+				title="Load this crosshair"
+				className="group cursor-pointer rounded-lg border border-tactical-blue/20 bg-secondary/30 p-4 transition-all duration-200 hover:border-neon-cyan/30 hover:bg-secondary/50"
+			>
 				<div className="flex items-start justify-between gap-3">
 					<div className="flex-1 min-w-0">
 						<div className="mb-2 flex flex-wrap items-center gap-2">
@@ -135,7 +145,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							</div>
 						)}
 					</div>
-					<div className="flex items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+					<div data-history-actions="" className="flex items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
 						<Button
 							onClick={() => handleToggleFavorite(item)}
 							variant="ghost"
@@ -223,7 +233,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							<p className="text-sm mt-1">Load a share code or export your current crosshair to save it here.</p>
 						</div>
 					) : (
-						<ScrollArea className="h-[400px] pr-4">
+						<ScrollArea className="max-h-[400px] pr-4">
 							<div className="space-y-3">
 								{history.map((item) => (
 									<CrosshairItem key={item.id} item={item} />
@@ -241,7 +251,7 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 							<p className="text-sm mt-1">Click the star icon to save your favorites</p>
 						</div>
 					) : (
-						<ScrollArea className="h-[400px] pr-4">
+						<ScrollArea className="max-h-[400px] pr-4">
 							<div className="space-y-3">
 								{favorites.map((item) => (
 									<CrosshairItem key={item.id} item={item} showDelete={false} />

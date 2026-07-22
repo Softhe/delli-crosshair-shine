@@ -40,10 +40,12 @@ Unit tests should remain close to the relevant module or component as `*.test.ts
 Playwright runs Chromium at 1280×720 and 390×844. The current suite verifies:
 
 - The unified studio loads without browser errors or horizontal overflow and keeps the editor ahead of the preview on mobile.
+- Mobile preview and autoexec disclosures open correctly, while fixed quick actions remain accessible.
 - A preset updates the selected color, preview, share code, URL, and persisted draft.
 - Code and link copying, aliased config download, recent history, and favorites.
 - `/custom` query/hash preservation, a valid legacy path, and an invalid single-segment path.
 - No automatically detectable WCAG 2.0/2.1 A or AA violations on the initial studio.
+- Theme palettes retain their intended tokens and remain free of automatically detectable WCAG A/AA violations.
 
 ## What to cover
 
@@ -52,6 +54,7 @@ Playwright runs Chromium at 1280×720 and 390×844. The current suite verifies:
 - Valid codes decode and round-trip without changing represented values.
 - Malformed codes and checksum failures produce actionable validation errors.
 - Values are clamped to supported ranges before encoding and preview rendering.
+- Representative fixture states cover negative/maximum gaps, heavy outlines, center dot, T style, alpha, and custom colors.
 - Commands and configs contain the correct convars, filename, and sanitized alias.
 
 ### Studio behavior

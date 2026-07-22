@@ -27,6 +27,7 @@ export const CrosshairShape = ({ crosshair, className = '' }: CrosshairShapeProp
 		<div className={`relative h-full w-full ${className}`}>
 			{safeCrosshair.centerDotEnabled && (
 				<div
+					data-crosshair-part="dot"
 					style={{
 						...lineStyle,
 						width: `${thickness}px`,
@@ -41,6 +42,7 @@ export const CrosshairShape = ({ crosshair, className = '' }: CrosshairShapeProp
 			)}
 			{!safeCrosshair.tStyleEnabled && length > 0 && (
 				<div
+					data-crosshair-part="arm"
 					style={{
 						...lineStyle,
 						width: `${thickness}px`,
@@ -54,6 +56,7 @@ export const CrosshairShape = ({ crosshair, className = '' }: CrosshairShapeProp
 			{length > 0 && (
 				<>
 					<div
+						data-crosshair-part="arm"
 						style={{
 							...lineStyle,
 							width: `${thickness}px`,
@@ -64,6 +67,7 @@ export const CrosshairShape = ({ crosshair, className = '' }: CrosshairShapeProp
 						}}
 					/>
 					<div
+						data-crosshair-part="arm"
 						style={{
 							...lineStyle,
 							width: `${length}px`,
@@ -74,6 +78,7 @@ export const CrosshairShape = ({ crosshair, className = '' }: CrosshairShapeProp
 						}}
 					/>
 					<div
+						data-crosshair-part="arm"
 						style={{
 							...lineStyle,
 							width: `${length}px`,

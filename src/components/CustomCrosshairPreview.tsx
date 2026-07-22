@@ -17,7 +17,7 @@ export const CustomCrosshairPreview = ({ crosshair, className = '', embedded = f
 			<div className="flex items-center justify-between border-b border-white/10 bg-white/[0.03] px-5 py-3">
 				<div>
 					<h2 className="text-base font-semibold text-foreground">Live preview</h2>
-					<p className="text-xs text-muted-foreground">Updates as you tune</p>
+					<p className="text-xs text-muted-foreground">Approximate rendering · in-game may vary</p>
 				</div>
 				<div className="h-8 w-8 rounded-full border border-white/20" style={{ backgroundColor: activeColor }} role="img" aria-label={`Selected color ${activeColor}`} />
 			</div>

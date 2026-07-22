@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { trackStudioEvent } from '@/lib/observability';
 
 interface AppErrorBoundaryProps {
 	children: ReactNode;
@@ -18,6 +19,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
 	}
 
 	componentDidCatch(error: Error, info: ErrorInfo) {
+		trackStudioEvent('app_error');
 		console.error('Unhandled application error', error, info);
 	}
 

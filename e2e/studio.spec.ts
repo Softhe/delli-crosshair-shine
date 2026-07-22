@@ -19,7 +19,8 @@ test('loads the unified studio without runtime or layout failures', async ({ pag
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'CS2 Crosshair Studio' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Customize' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Live preview' })).toBeVisible();
+  if (testInfo.project.name === 'mobile-chromium') await expect(page.getByTestId('mobile-preview-disclosure')).toBeVisible();
+  else await expect(page.getByRole('heading', { name: 'Live preview' })).toBeVisible();
 
   const controlCenter = page.getByTestId('control-center');
   await expect(controlCenter.getByTestId('import-controls')).toBeVisible();
@@ -31,6 +32,7 @@ test('loads the unified studio without runtime or layout failures', async ({ pag
   await expect(page.getByRole('heading', { name: 'Local crosshair library' })).toBeVisible();
   await expect(page.getByRole('tab', { name: 'Recent (0)' })).toBeVisible();
   await expect(page.getByText('Codes you load or export are saved only in this browser.')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Report an issue' })).toHaveAttribute('href', 'https://github.com/Softhe/delli-crosshair-shine/issues/new/choose');
 
   const sliderStack = controlCenter.getByTestId('slider-stack');
   const sliderNames = ['Length', 'Thickness', 'Gap', 'Outline thickness', 'Alpha'];
@@ -89,8 +91,9 @@ test('loads the unified studio without runtime or layout failures', async ({ pag
   expect(errors).toEqual([]);
 });
 
-test('updates the preview, share code, URL, and draft from a preset', async ({ page }) => {
+test('updates the preview, share code, URL, and draft from a preset', async ({ page }, testInfo) => {
   await page.goto('/');
+  if (testInfo.project.name === 'mobile-chromium') await page.getByTestId('mobile-preview-disclosure').locator('summary').click();
   await page.getByRole('button', { name: 'High visibility' }).click();
 
   const codeInput = page.getByRole('textbox', { name: 'CS2 crosshair share code', exact: true });
@@ -112,7 +115,8 @@ test('offers persistent CS2 and calm Crimson redesigns with a deep-teal Tactical
   });
   expect(tacticalTokens.primary).toBe('174 72% 42%');
   expect(tacticalTokens.accent).toBe('191 78% 52%');
-  expect(tacticalTokens.background).toContain('174 72% 42%');
+	expect(tacticalTokens.background).toContain('radial-gradient');
+	expect(tacticalTokens.background).toContain('#1eb8a9');
 
   await page.getByRole('button', { name: 'CS2', exact: true }).click();
   await expect(root).toHaveAttribute('data-palette', 'cs2');
@@ -121,7 +125,8 @@ test('offers persistent CS2 and calm Crimson redesigns with a deep-teal Tactical
     return { primary: styles.getPropertyValue('--primary').trim(), background: styles.getPropertyValue('--gradient-background').trim() };
   });
   expect(cs2Tokens.primary).toBe('28 80% 55%');
-  expect(cs2Tokens.background).toContain('28 80% 50%');
+  expect(cs2Tokens.background).toContain('radial-gradient');
+  expect(cs2Tokens.background).toContain('#e6791a');
   await page.waitForTimeout(300);
   const cs2A11y = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -135,7 +140,8 @@ test('offers persistent CS2 and calm Crimson redesigns with a deep-teal Tactical
     return { primary: styles.getPropertyValue('--primary').trim(), background: styles.getPropertyValue('--gradient-background').trim() };
   });
   expect(crimsonTokens.primary).toBe('345 52% 38%');
-  expect(crimsonTokens.background).toContain('345 52% 34%');
+  expect(crimsonTokens.background).toContain('radial-gradient');
+  expect(crimsonTokens.background).toContain('#842a40');
   expect(crimsonTokens).not.toEqual(cs2Tokens);
   await page.waitForTimeout(300);
   const crimsonA11y = await new AxeBuilder({ page })
@@ -155,7 +161,9 @@ test('offers persistent CS2 and calm Crimson redesigns with a deep-teal Tactical
 
 test('keeps the full creator visible and loads the exact Dot preset', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Dot' }).click();
+  const dotPreset = page.getByRole('button', { name: 'Dot' });
+  await expect(dotPreset).toHaveAttribute('type', 'button');
+  await dotPreset.click();
 
   await expect(page.getByRole('textbox', { name: 'CS2 crosshair share code', exact: true })).toHaveValue(DOT_CODE);
   await expect(page.getByRole('slider', { name: 'Length' })).toHaveAttribute('aria-valuenow', '0');
@@ -166,6 +174,33 @@ test('keeps the full creator visible and loads the exact Dot preset', async ({ p
   await expect(page.getByRole('checkbox', { name: 'Center dot' })).toBeChecked();
   await expect(page.getByRole('checkbox', { name: 'Outline' })).toBeChecked();
   await expect(page.getByRole('checkbox', { name: 'Use alpha' })).toBeChecked();
+});
+
+test('provides generous pointer targets for sliders without changing keyboard behavior', async ({ page }) => {
+  await page.goto('/');
+  const sliderNames = ['Length', 'Thickness', 'Gap', 'Outline thickness', 'Alpha'];
+
+  for (const name of sliderNames) {
+    const setting = page.locator(`[data-setting-slider="${name}"]`);
+    const rootBox = await setting.locator('[data-slider-root]').boundingBox();
+    const thumbBox = await page.getByRole('slider', { name, exact: true }).boundingBox();
+    expect(rootBox).not.toBeNull();
+    expect(thumbBox).not.toBeNull();
+    expect(rootBox!.height).toBeGreaterThanOrEqual(28);
+    expect(thumbBox!.width).toBeGreaterThanOrEqual(24);
+    expect(thumbBox!.height).toBeGreaterThanOrEqual(24);
+  }
+
+  const length = page.getByRole('slider', { name: 'Length', exact: true });
+  const lengthRoot = page.locator('[data-setting-slider="Length"] [data-slider-root]');
+  const beforePointer = Number(await length.getAttribute('aria-valuenow'));
+  const lengthRootBox = await lengthRoot.boundingBox();
+  await lengthRoot.click({ position: { x: lengthRootBox!.width * 0.8, y: lengthRootBox!.height / 2 } });
+  const afterPointer = Number(await length.getAttribute('aria-valuenow'));
+  expect(afterPointer).toBeGreaterThan(beforePointer);
+
+  await length.press('ArrowLeft');
+  await expect(length).toHaveAttribute('aria-valuenow', String(afterPointer - 0.5));
 });
 
 test('edits every restored control and carries the values into generated convars', async ({ page }) => {
@@ -197,7 +232,7 @@ test('edits every restored control and carries the values into generated convars
   await expect(page.getByRole('slider', { name: 'Alpha' })).toHaveAttribute('aria-disabled', 'true');
 });
 
-test('copies active outputs, downloads the displayed file, and manages favorites', async ({ page }) => {
+test('copies active outputs, downloads the displayed file, and manages favorites', async ({ page }, testInfo) => {
   await page.goto('/');
   const code = await page.getByRole('textbox', { name: 'CS2 crosshair share code', exact: true }).inputValue();
 
@@ -206,16 +241,22 @@ test('copies active outputs, downloads the displayed file, and manages favorites
   await expect(page.getByRole('tab', { name: 'Recent (1)' })).toBeVisible();
   await expect(page.getByTestId('history-item')).toHaveAttribute('data-activity', 'exported');
   await expect(page.getByTestId('history-item').getByText('Exported')).toBeVisible();
+  if (testInfo.project.name === 'mobile-chromium') {
+    const libraryBox = await page.getByTestId('local-crosshair-library').boundingBox();
+    expect(libraryBox).not.toBeNull();
+    expect(libraryBox!.height).toBeLessThan(420);
+  }
 
   await page.getByRole('button', { name: 'Share link', exact: true }).click();
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(`http://127.0.0.1:4175/?code=${code}`);
 
+  await page.getByText('CFG & autoexec shortcut', { exact: true }).click();
   await page.getByLabel('Alias name', { exact: false }).fill('team green');
   await expect(page.getByText('crosshair_team_green.cfg', { exact: true })).toBeVisible();
   await expect(page.getByText('alias "team_green" "exec crosshair_team_green.cfg"', { exact: true })).toBeVisible();
 
   const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Download CFG' }).click();
+  await page.getByRole('button', { name: 'Download CFG', exact: true }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toBe('crosshair_team_green.cfg');
   const downloadPath = await download.path();
@@ -227,6 +268,42 @@ test('copies active outputs, downloads the displayed file, and manages favorites
   await expect(page.getByRole('tab', { name: 'Recent (1)' })).toBeVisible();
   await page.getByRole('button', { name: 'Add team green to favorites' }).click();
   await expect(page.getByRole('tab', { name: 'Favorites (1)' })).toBeVisible();
+});
+
+test('loads a saved crosshair by left-clicking its history card', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Dot', exact: true }).click();
+  const codeInput = page.getByRole('textbox', { name: 'CS2 crosshair share code', exact: true });
+  const savedCode = await codeInput.inputValue();
+
+  await page.getByRole('button', { name: 'Copy code' }).click();
+  await expect(page.getByTestId('history-item')).toBeVisible();
+  await page.getByRole('button', { name: 'Classic green', exact: true }).click();
+  await expect(codeInput).not.toHaveValue(savedCode);
+
+  const changedCode = await codeInput.inputValue();
+  const historyItem = page.getByTestId('history-item');
+  await expect(historyItem.locator('[data-history-actions]')).toHaveCount(1);
+
+  await historyItem.getByRole('button', { name: 'Copy share code for crosshair' }).click();
+  await expect(codeInput).toHaveValue(changedCode);
+  await historyItem.getByRole('button', { name: 'Add crosshair to favorites' }).click();
+  await expect(codeInput).toHaveValue(changedCode);
+  await historyItem.getByRole('button', { name: 'Copy share link for crosshair' }).click();
+  await expect(codeInput).toHaveValue(changedCode);
+
+  await historyItem.getByRole('button', { name: 'Load crosshair' }).click();
+  await expect(codeInput).toHaveValue(savedCode);
+  await page.getByRole('button', { name: 'Classic green', exact: true }).click();
+  await expect(codeInput).toHaveValue(changedCode);
+
+  await historyItem.locator('code').click();
+  await expect(codeInput).toHaveValue(savedCode);
+
+  await page.getByRole('button', { name: 'Classic green', exact: true }).click();
+  await historyItem.getByRole('button', { name: 'Remove crosshair from history' }).click();
+  await expect(codeInput).toHaveValue(changedCode);
+  await expect(historyItem).toHaveCount(0);
 });
 
 test('pastes valid codes and exposes invalid clipboard values accessibly', async ({ page }) => {

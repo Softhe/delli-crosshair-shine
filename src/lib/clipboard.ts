@@ -77,7 +77,7 @@ export const readFromClipboard = async (): Promise<string> => {
 		try {
 			return await navigator.clipboard.readText();
 		} catch (error) {
-			throw new Error('Failed to read from clipboard. Permission may be required.');
+			throw new Error('Failed to read from clipboard. Permission may be required.', { cause: error });
 		}
 	} else {
 		throw new Error('Clipboard read not supported in this browser');

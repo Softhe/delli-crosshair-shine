@@ -50,6 +50,17 @@ export const FAQ = () => {
 					</AccordionItem>
 				))}
 			</Accordion>
+			<div className="mt-5 flex flex-wrap items-center gap-2 border-t border-white/10 pt-4 text-sm text-muted-foreground">
+				<span>Found a problem or have an idea?</span>
+				<a
+					href="https://github.com/Softhe/delli-crosshair-shine/issues/new/choose"
+					target="_blank"
+					rel="noreferrer"
+					className="font-medium text-primary underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+				>
+					Report an issue
+				</a>
+			</div>
 		</Card>
 	);
 };

@@ -12,6 +12,8 @@ CS2 Crosshair Studio is a private, browser-based workspace for importing, editin
 - Keep up to 20 recently loaded or exported crosshairs and 50 favorites in browser storage.
 - Restore the latest draft after a refresh and reset it when needed.
 - Use `Ctrl+Enter` or `Cmd+Enter` to copy the current console command.
+- On mobile, keep export actions within reach while preview and optional autoexec details stay collapsible.
+- Report bugs and suggest improvements through the project's [GitHub Issues](https://github.com/Softhe/delli-crosshair-shine/issues/new/choose) page.
 
 All decoding, editing, persistence, and file generation happen in the browser. The live preview is an approximation; resolution and in-game rendering can produce small visual differences.
 
@@ -33,7 +35,7 @@ Use query-based share links for new links. On GitHub Pages, a legacy path can be
 Requirements:
 
 - Node.js 20 or newer
-- pnpm 11.7.0 (the version pinned in `package.json`)
+- pnpm 11.9.0 (the version pinned in `package.json`)
 
 ```sh
 corepack enable

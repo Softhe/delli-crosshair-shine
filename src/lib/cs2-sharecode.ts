@@ -134,9 +134,8 @@ function bytesToShareCode(bytes: number[]) {
   const hex = bytesToHex(bytes);
   let total = BigInt(`0x${hex}`);
   let chars = '';
-  let rem = BigInt(0);
   for (let i = 0; i < 25; i++) {
-    rem = total % DICTIONARY_LENGTH;
+    const rem = total % DICTIONARY_LENGTH;
     chars += DICTIONARY[Number(rem)];
     total = total / DICTIONARY_LENGTH;
   }

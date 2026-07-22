@@ -21,7 +21,8 @@ flowchart LR
 - `src/main.tsx` mounts React and the application error boundary.
 - `src/App.tsx` owns routing, shared tooltip and toast providers, and the lazy not-found page.
 - `src/pages/Index.tsx` composes the studio and lazy-loaded FAQ.
-- `src/pages/CustomCrosshair.tsx` owns the current editable crosshair, import state, URL synchronization, actions, and layout.
+- `src/pages/CustomCrosshair.tsx` owns the current editable crosshair, URL synchronization, actions, and responsive studio layout.
+- `src/components/studio/` contains focused import, customization, preview, autoexec, and mobile-action surfaces.
 - `src/components/CustomCrosshairPreview.tsx` and `CrosshairShape.tsx` render the approximation shown in the editor.
 - `src/components/CrosshairHistory.tsx` presents recent exports and favorites from local storage.
 
@@ -39,6 +40,7 @@ The older `CS2ConfigGenerator` and its separate preview were removed. New work s
 | `src/lib/custom-crosshair-storage.ts` | Persist the current draft as an encoded share code. |
 | `src/lib/storage.ts` | Manage history, favorites, user settings, and versioned data migration. |
 | `src/lib/clipboard.ts` | Copy text with browser-compatible fallbacks. |
+| `src/lib/observability.ts` | Record coarse, session-only product counters and web-vital snapshots without remote transmission. |
 
 Keep conversion and formatting rules in these pure modules where possible. Components should coordinate user interaction rather than duplicate the codec or output rules.
 
@@ -54,6 +56,8 @@ Browser storage is optional and failure-tolerant:
 - `cs2_crosshair_settings` is reserved for local user settings and participates in storage import/export.
 
 Clearing site data removes this information. There is no account or device synchronization.
+
+Aggregate interaction counters and LCP/CLS snapshots live only in `sessionStorage` for the current tab. They contain a coarse viewport bucket but never share codes, aliases, URLs, clipboard contents, or other user-entered values, and the application does not transmit them to a server.
 
 ## Routes and static hosting
 

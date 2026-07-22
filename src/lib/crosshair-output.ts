@@ -47,7 +47,7 @@ export const getCrosshairConVars = (shareCode: string): string => {
 		return crosshairToConVars(crosshair);
 	} catch (error) {
 		if (error instanceof InvalidShareCode || error instanceof InvalidCrosshairShareCode) {
-			throw new Error('Invalid crosshair share code format');
+			throw new Error('Invalid crosshair share code format', { cause: error });
 		}
 		throw error;
 	}
