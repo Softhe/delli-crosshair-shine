@@ -15,6 +15,7 @@ CS2 Crosshair Studio is a private, browser-based workspace for importing, editin
 - Use `Ctrl+Enter` or `Cmd+Enter` to copy the current console command.
 - On mobile, keep export actions within reach while preview and optional autoexec details stay collapsible.
 - Report bugs and suggest improvements through the project's [GitHub Issues](https://github.com/Softhe/delli-crosshair-shine/issues/new/choose) page.
+- Give one-tap ease feedback that stays only in the current browser.
 
 All decoding, editing, persistence, and file generation happen in the browser. The live preview is an approximation; resolution and in-game rendering can produce small visual differences.
 
@@ -57,6 +58,7 @@ Useful commands:
 | `pnpm test:watch` | Run Vitest in watch mode. |
 | `pnpm test:utils` | Verify share-code and preview utility invariants. |
 | `pnpm test:e2e` | Build the site, then run the Playwright smoke tests at desktop and mobile widths. |
+| `pnpm capture:preview` | Capture browser-side preview references for the CS2 calibration matrix. |
 | `pnpm build` | Build `dist/`, prepare compatibility pages, and verify the production artifacts. |
 | `pnpm preview` | Serve the production build locally. |
 | `pnpm verify:build` | Verify the files and metadata in an existing `dist/`. |
@@ -76,7 +78,7 @@ public/                    Metadata, icons, crawler files, and CNAME
 .github/workflows/         Continuous integration and GitHub Pages deployment
 ```
 
-See [Architecture](docs/ARCHITECTURE.md), [Testing](docs/TESTING.md), and [Release and deployment](docs/RELEASE.md) for the maintained project documentation.
+See [Architecture](docs/ARCHITECTURE.md), [Testing](docs/TESTING.md), and [Release and deployment](docs/RELEASE.md) for the maintained project documentation. Preview changes must also follow [Preview calibration](docs/PREVIEW_CALIBRATION.md), and user validation should follow the [2.1 playtest](docs/PLAYTEST_2_1.md).
 
 ## Deployment
 

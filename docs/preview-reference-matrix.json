@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "authority": "Counter-Strike 2",
+  "captureStatus": "awaiting-real-game-captures",
+  "scenarios": [
+    { "id": "compact", "preset": "Small static", "checks": ["length", "thickness", "gap"] },
+    { "id": "dot", "preset": "Dot", "checks": ["dot", "outline", "gap"] },
+    { "id": "outlined", "preset": "High visibility", "checks": ["length", "thickness", "outline", "color"] },
+    { "id": "classic", "preset": "Classic green", "checks": ["length", "gap", "dot", "color"] },
+    { "id": "partial-alpha", "shareCode": "CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA", "checks": ["alpha", "color"] }
+  ],
+  "resolutions": ["1920x1080", "2560x1440", "1280x960-stretched"]
+}

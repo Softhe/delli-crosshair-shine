@@ -10,6 +10,8 @@ Before merging to `main`:
 4. Confirm `pnpm verify:build` finds `index.html`, `404.html`, `custom.html`, `custom/index.html`, `CNAME`, `robots.txt`, `sitemap.xml`, and `og-image.jpg` and validates their metadata and fallback content.
 5. Run the manual production smoke test in [TESTING.md](TESTING.md).
 6. Verify page title, description, canonical URL, Open Graph image, favicon, crawler rules, sitemap URL, and `delli.cc` references.
+7. For preview changes, follow `PREVIEW_CALIBRATION.md` and review the browser/CS2 reference matrix.
+8. Review the JavaScript and CSS sizes printed by the build budget check; raise a budget only with a documented reason.
 
 Do not describe a change as released until the Pages deployment and production smoke test have completed.
 
@@ -47,5 +49,6 @@ After the Pages job and its automated `pnpm smoke:production` step succeed:
 5. Copy a command and share link, download a config, and inspect the result.
 6. Test at desktop and mobile widths and check the browser console and network panel for errors or missing assets.
 7. Confirm `CNAME`, `robots.txt`, `sitemap.xml`, favicon, and `og-image.jpg` are served from the custom domain.
+8. Recruit 3–5 CS2 players for a short task-based check: import, tune, apply, and report whether the result matched the preview. Summarize friction points in the next milestone without collecting share codes or aliases.
 
 If a regression is found, fix it forward when practical. If rollback is necessary, revert the responsible commit on `main` and let the same Pages workflow deploy the restored build; do not edit generated Pages artifacts by hand.

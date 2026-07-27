@@ -18,6 +18,7 @@ test('loads the unified studio without runtime or layout failures', async ({ pag
 
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'CS2 Crosshair Studio' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Build your match-ready crosshair in three moves' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Customize' })).toBeVisible();
   if (testInfo.project.name === 'mobile-chromium') await expect(page.getByTestId('mobile-preview-disclosure')).toBeVisible();
   else await expect(page.getByRole('heading', { name: 'Live preview' })).toBeVisible();
@@ -89,6 +90,46 @@ test('loads the unified studio without runtime or layout failures', async ({ pag
   }
 
   expect(errors).toEqual([]);
+});
+
+test('guides first-time users once and records optional feedback locally', async ({ page }) => {
+  await page.goto('/');
+  const guide = page.getByTestId('first-run-guide');
+  await expect(guide).toBeVisible();
+  await expect(guide.locator('li')).toHaveCount(3);
+  await page.getByRole('button', { name: 'Dismiss getting started guide' }).click();
+  await expect(guide).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cs2_studio_guide_dismissed'))).toBe('true');
+
+  await page.reload();
+  await expect(guide).toHaveCount(0);
+  await page.getByRole('button', { name: 'Easy', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Easy', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByText('Thanks — your answer stays only in this browser.')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('cs2_studio_feedback'))).toBe('easy');
+  const metrics = await page.evaluate(() => sessionStorage.getItem('cs2_studio_session_metrics') || '');
+  expect(metrics).toContain('feedback_easy');
+  expect(metrics).not.toContain('CSGO-');
+});
+
+test('completes the first-session import, edit, persist, and export path', async ({ page }) => {
+  await page.goto('/');
+  const input = page.getByRole('textbox', { name: 'CS2 crosshair share code', exact: true });
+  await input.fill(VALID_CODE);
+  await page.getByRole('button', { name: 'Load crosshair', exact: true }).click();
+  await expect(page).toHaveURL(`/?code=${VALID_CODE}`);
+  await page.getByRole('slider', { name: 'Length', exact: true }).press('ArrowRight');
+  const editedCode = await input.inputValue();
+  expect(editedCode).not.toBe(VALID_CODE);
+  await expect(page).toHaveURL(`/?code=${editedCode}`);
+
+  await page.reload();
+  await expect(input).toHaveValue(editedCode);
+  await page.getByRole('button', { name: 'Copy command', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain('cl_crosshair');
+  const recentTab = page.locator('[role="tab"][id$="-trigger-recent"]');
+  await expect(recentTab).toBeVisible();
+  await expect(recentTab).toContainText('Recent (');
 });
 
 test('updates the preview, share code, URL, and draft from a preset', async ({ page }, testInfo) => {

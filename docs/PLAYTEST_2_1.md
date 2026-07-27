@@ -1,0 +1,34 @@
+# CS2 Crosshair Studio 2.1 playtest
+
+## Goal
+
+Validate that players can import, tune, apply, and export a crosshair without assistance, and that the browser preview is close enough to the in-game result to support editing decisions.
+
+## Participants
+
+Recruit 3–5 active CS2 players across at least two display configurations. Record only an anonymous participant label, resolution, aspect ratio, and completion observations. Do not collect Steam IDs, share codes, aliases, or contact details in this document.
+
+## Session script
+
+1. Open the deployed studio in a fresh browser profile.
+2. Import a crosshair from CS2 or choose a preset.
+3. Change its length, gap, color, and one visibility option.
+4. Apply it in CS2 using the copied command.
+5. Compare the in-game result with the preview.
+6. Download a CFG and explain where the player expects to place it.
+7. Ask: “What was unclear or slower than you expected?”
+
+## Results
+
+| Participant | Display | Completed unaided | Preview matched | Main friction | Follow-up |
+| --- | --- | --- | --- | --- | --- |
+| P1 | Pending | Pending | Pending | Pending | Pending |
+| P2 | Pending | Pending | Pending | Pending | Pending |
+| P3 | Pending | Pending | Pending | Pending | Pending |
+
+## Success criteria
+
+- At least 4 of 5 participants complete import → edit → apply without assistance.
+- No participant loses their edited crosshair after refresh.
+- Median perceived preview accuracy is at least 4/5.
+- Every repeated friction point becomes a scoped 2.1 backlog item.
