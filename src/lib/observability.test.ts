@@ -16,4 +16,11 @@ describe('privacy-preserving observability', () => {
 		expect(listener).toHaveBeenCalledTimes(2);
 		window.removeEventListener('cs2-studio:event', listener);
 	});
+
+	it('records feedback as a coarse count without transmitting text', () => {
+		trackStudioEvent('feedback_difficult');
+		const snapshot = getObservabilitySnapshot();
+		expect(snapshot.events.feedback_difficult).toBe(1);
+		expect(sessionStorage.getItem('cs2_studio_session_metrics')).not.toContain('comment');
+	});
 });

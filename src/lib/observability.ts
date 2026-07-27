@@ -1,4 +1,4 @@
-export type StudioEventName = 'studio_loaded' | 'preset_selected' | 'import_succeeded' | 'import_failed' | 'copy_command' | 'copy_code' | 'share_link' | 'download_cfg' | 'palette_changed' | 'history_loaded' | 'app_error';
+export type StudioEventName = 'studio_loaded' | 'preset_selected' | 'import_succeeded' | 'import_failed' | 'copy_command' | 'copy_code' | 'share_link' | 'download_cfg' | 'palette_changed' | 'history_loaded' | 'guide_dismissed' | 'feedback_easy' | 'feedback_difficult' | 'app_error';
 
 export interface ObservabilitySnapshot {
 	events: Partial<Record<StudioEventName, number>>;

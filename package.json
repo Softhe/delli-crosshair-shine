@@ -16,9 +16,10 @@
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
     "test:e2e": "pnpm build && playwright test",
+    "capture:preview": "node scripts/capture-preview-matrix.mjs",
     "test:watch": "vitest",
     "test:utils": "node scripts/verify-crosshair-utils.mjs",
-    "verify:build": "node scripts/verify-build.mjs",
+    "verify:build": "node scripts/verify-build.mjs && node scripts/verify-performance-budget.mjs",
     "smoke:production": "node scripts/smoke-site.mjs https://delli.cc",
     "check": "pnpm lint && pnpm typecheck && pnpm test:utils && pnpm test && pnpm build"
   },

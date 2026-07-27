@@ -15,6 +15,7 @@ import { CustomizeControls, type BooleanCrosshairKey, type NumberCrosshairKey } 
 import { ImportControls, type StudioPreset } from '@/components/studio/ImportControls';
 import { MobileQuickActions } from '@/components/studio/MobileQuickActions';
 import { StudioPreviewPanel } from '@/components/studio/StudioPreviewPanel';
+import { FirstRunGuide } from '@/components/studio/FirstRunGuide';
 import { useToast } from '@/hooks/use-toast';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { copyToClipboard } from '@/lib/clipboard';
@@ -60,6 +61,7 @@ const CrosshairHistory = lazy(() => import('@/components/CrosshairHistory').then
 
 const DOT_CROSSHAIR_CODE = 'CSGO-zDZH2-jXXvr-yFaQu-OjXPS-G8sdA';
 const PALETTE_STORAGE_KEY = 'cs2_studio_palette';
+const GUIDE_STORAGE_KEY = 'cs2_studio_guide_dismissed';
 
 type StudioPalette = 'tactical' | 'cs2' | 'crimson';
 
@@ -111,6 +113,9 @@ const CustomCrosshair = () => {
 	const [customColorOpen, setCustomColorOpen] = useState(false);
 	const [palette, setPalette] = useState<StudioPalette>(getStoredPalette);
 	const [historyKey, setHistoryKey] = useState(0);
+	const [showGuide, setShowGuide] = useState(() => {
+		try { return localStorage.getItem(GUIDE_STORAGE_KEY) !== 'true'; } catch { return true; }
+	});
 	const desktopStudioLayout = useMediaQuery('(min-width: 1280px)');
 	const narrowStudioLayout = useMediaQuery('(max-width: 767px)');
 	const suppressedDraftCode = useRef<string | null>(null);
@@ -325,6 +330,12 @@ const CustomCrosshair = () => {
 		toast({ title: 'Crosshair loaded', description: 'Loaded from your saved crosshairs.' });
 	};
 
+	const dismissGuide = () => {
+		setShowGuide(false);
+		try { localStorage.setItem(GUIDE_STORAGE_KEY, 'true'); } catch { /* The guide can reappear if storage is unavailable. */ }
+		trackStudioEvent('guide_dismissed');
+	};
+
 	return (
 		<div className="mx-auto flex w-full max-w-7xl flex-col gap-3 pb-20 md:gap-4 md:pb-0">
 			<header>
@@ -336,6 +347,7 @@ const CustomCrosshair = () => {
 					<p className="max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg xl:leading-normal">Shift-Tab, paste a crosshair you spotted in your match, tune it, then download a ready-to-use CFG.</p>
 				</div>
 			</header>
+			{showGuide && <FirstRunGuide onDismiss={dismissGuide} />}
 
 			<Card data-testid="control-center" className="overflow-hidden border-white/10 bg-card/75 p-0 shadow-2xl shadow-black/25 backdrop-blur-xl">
 					<div className="flex flex-col gap-4 border-b border-white/10 bg-white/[0.03] px-5 py-4 md:px-6 lg:flex-row lg:items-center lg:justify-between">
