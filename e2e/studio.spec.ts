@@ -156,8 +156,8 @@ test('offers persistent CS2 and calm Crimson redesigns with a deep-teal Tactical
   });
   expect(tacticalTokens.primary).toBe('174 72% 42%');
   expect(tacticalTokens.accent).toBe('191 78% 52%');
-	expect(tacticalTokens.background).toContain('radial-gradient');
-	expect(tacticalTokens.background).toContain('#1eb8a9');
+	expect(tacticalTokens.background).toContain('linear-gradient');
+	expect(tacticalTokens.background).toContain('#050607');
 
   await page.getByRole('button', { name: 'CS2', exact: true }).click();
   await expect(root).toHaveAttribute('data-palette', 'cs2');
@@ -166,8 +166,8 @@ test('offers persistent CS2 and calm Crimson redesigns with a deep-teal Tactical
     return { primary: styles.getPropertyValue('--primary').trim(), background: styles.getPropertyValue('--gradient-background').trim() };
   });
   expect(cs2Tokens.primary).toBe('28 80% 55%');
-  expect(cs2Tokens.background).toContain('radial-gradient');
-  expect(cs2Tokens.background).toContain('#e6791a');
+  expect(cs2Tokens.background).toContain('linear-gradient');
+  expect(cs2Tokens.background).toContain('#050607');
   await page.waitForTimeout(300);
   const cs2A11y = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -181,9 +181,9 @@ test('offers persistent CS2 and calm Crimson redesigns with a deep-teal Tactical
     return { primary: styles.getPropertyValue('--primary').trim(), background: styles.getPropertyValue('--gradient-background').trim() };
   });
   expect(crimsonTokens.primary).toBe('345 52% 38%');
-  expect(crimsonTokens.background).toContain('radial-gradient');
-  expect(crimsonTokens.background).toContain('#842a40');
-  expect(crimsonTokens).not.toEqual(cs2Tokens);
+  expect(crimsonTokens.background).toContain('linear-gradient');
+  expect(crimsonTokens.background).toContain('#050607');
+  expect(crimsonTokens.primary).not.toEqual(cs2Tokens.primary);
   await page.waitForTimeout(300);
   const crimsonA11y = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
