@@ -1,21 +1,12 @@
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { chromium } from '@playwright/test';
 
 const baseUrl = process.env.PREVIEW_BASE_URL || 'http://127.0.0.1:4175';
 const outputDir = resolve('artifacts/preview-calibration');
-const scenarios = [
-  { id: 'compact', button: 'Small static' },
-  { id: 'dot', button: 'Dot' },
-  { id: 'outlined', button: 'High visibility' },
-  { id: 'classic', button: 'Classic green' },
-  { id: 'partial-alpha', shareCode: 'CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA' },
-];
-const resolutions = [
-  { id: '1920x1080', width: 1920, height: 1080 },
-  { id: '2560x1440', width: 2560, height: 1440 },
-  { id: '1280x960-stretched', width: 1280, height: 960 },
-];
+const manifest = JSON.parse(await readFile(resolve('docs/preview-reference-matrix.json'), 'utf8'));
+const scenarios = manifest.scenarios.map(({ id, preset, shareCode }) => ({ id, button: preset, shareCode }));
+const resolutions = manifest.resolutions;
 
 await mkdir(outputDir, { recursive: true });
 const browser = await chromium.launch();

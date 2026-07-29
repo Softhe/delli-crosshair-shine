@@ -19,15 +19,19 @@ const measure = async (names) => {
 };
 
 const [js, css] = await Promise.all([measure(jsFiles), measure(cssFiles)]);
+const entryFiles = jsFiles.filter((file) => file.startsWith('index-'));
+const entry = await measure(entryFiles);
 const budgets = {
   jsRaw: 500_000,
-  jsGzip: 160_000,
+  jsGzip: 150_000,
+  entryGzip: 115_000,
   cssRaw: 75_000,
   cssGzip: 16_000,
 };
 
 assert.ok(js.raw <= budgets.jsRaw, `JavaScript raw size ${js.raw} exceeds ${budgets.jsRaw}`);
 assert.ok(js.gzip <= budgets.jsGzip, `JavaScript gzip size ${js.gzip} exceeds ${budgets.jsGzip}`);
+assert.ok(entry.gzip <= budgets.entryGzip, `Entry JavaScript gzip size ${entry.gzip} exceeds ${budgets.entryGzip}`);
 assert.ok(css.raw <= budgets.cssRaw, `CSS raw size ${css.raw} exceeds ${budgets.cssRaw}`);
 assert.ok(css.gzip <= budgets.cssGzip, `CSS gzip size ${css.gzip} exceeds ${budgets.cssGzip}`);
 

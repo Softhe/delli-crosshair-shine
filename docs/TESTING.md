@@ -31,7 +31,10 @@ pnpm verify:build
 pnpm preview
 pnpm test:e2e
 pnpm smoke:production
+pnpm verify:release-readiness
 ```
+
+The release-readiness command is separate from `pnpm check`: it fails until real CS2 captures and five anonymized player sessions have been supplied.
 
 Unit tests should remain close to the relevant module or component as `*.test.ts` or `*.test.tsx`. End-to-end tests live under `e2e/` and exercise the built application through a real browser.
 

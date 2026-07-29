@@ -96,7 +96,11 @@ test('guides first-time users once and records optional feedback locally', async
   await page.goto('/');
   const guide = page.getByTestId('first-run-guide');
   await expect(guide).toBeVisible();
-  await expect(guide.locator('li')).toHaveCount(3);
+  await expect(guide.getByLabel('Getting started steps')).toContainText('Import');
+  if ((page.viewportSize()?.width || 0) < 768) {
+    await guide.getByRole('button', { name: 'Getting started help' }).click();
+    await expect(guide.locator('#first-run-help').getByText(/paste a code or choose a preset/i)).toBeVisible();
+  }
   await page.getByRole('button', { name: 'Dismiss getting started guide' }).click();
   await expect(guide).toHaveCount(0);
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cs2_studio_guide_dismissed'))).toBe('true');
@@ -105,11 +109,42 @@ test('guides first-time users once and records optional feedback locally', async
   await expect(guide).toHaveCount(0);
   await page.getByRole('button', { name: 'Easy', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Easy', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByText('Thanks — your answer stays only in this browser.')).toBeVisible();
+  await expect(page.getByText(/Saved locally/)).toBeVisible();
   await expect.poll(() => page.evaluate(() => localStorage.getItem('cs2_studio_feedback'))).toBe('easy');
+  await page.getByLabel('Optional note').fill('Fast and clear');
+  await page.getByRole('button', { name: 'Review GitHub issue' }).click();
+  await expect(page.getByTestId('feedback-issue-preview')).toContainText('Fast and clear');
+  const issueHref = await page.getByRole('link', { name: 'Open GitHub issue' }).getAttribute('href');
+  expect(issueHref).toContain('github.com/Softhe/delli-crosshair-shine/issues/new');
+  expect(decodeURIComponent(issueHref || '')).not.toContain('CSGO-');
   const metrics = await page.evaluate(() => sessionStorage.getItem('cs2_studio_session_metrics') || '');
   expect(metrics).toContain('feedback_easy');
   expect(metrics).not.toContain('CSGO-');
+});
+
+test('uses compact mobile onboarding and a dedicated ultrawide library column', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await expect(page.getByTestId('first-run-guide').getByLabel('Getting started steps')).toBeVisible();
+  const importBox = await page.getByTestId('import-controls').boundingBox();
+  expect(importBox?.y).toBeLessThan(500);
+  await expect(page.getByTestId('mobile-quick-actions')).toBeVisible();
+  const previewBox = await page.getByTestId('preview-workspace').boundingBox();
+  const exportBox = await page.getByTestId('export-controls').boundingBox();
+  expect(previewBox).not.toBeNull();
+  expect(exportBox).not.toBeNull();
+  expect(exportBox!.y).toBeGreaterThan(previewBox!.y);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).not.toBe('rgb(255, 255, 255)');
+
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  await expect(page.getByTestId('editor-library-column')).toBeVisible();
+  const columnsAt1600 = await page.getByTestId('editor-layout').evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length);
+  expect(columnsAt1600).toBe(3);
+
+  await page.setViewportSize({ width: 2560, height: 1440 });
+  await expect(page.getByTestId('editor-library-column')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(2560);
 });
 
 test('completes the first-session import, edit, persist, and export path', async ({ page }) => {

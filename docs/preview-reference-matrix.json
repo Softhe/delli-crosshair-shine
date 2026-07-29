@@ -1,7 +1,10 @@
 {
-  "version": 1,
+  "$schema": "./preview-reference-matrix.schema.json",
+  "version": 2,
   "authority": "Counter-Strike 2",
   "captureStatus": "awaiting-real-game-captures",
+  "naming": "{scenario}-{resolution}-{source}.png",
+  "sources": ["browser", "cs2"],
   "scenarios": [
     { "id": "compact", "preset": "Small static", "checks": ["length", "thickness", "gap"] },
     { "id": "dot", "preset": "Dot", "checks": ["dot", "outline", "gap"] },
@@ -9,5 +12,9 @@
     { "id": "classic", "preset": "Classic green", "checks": ["length", "gap", "dot", "color"] },
     { "id": "partial-alpha", "shareCode": "CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA", "checks": ["alpha", "color"] }
   ],
-  "resolutions": ["1920x1080", "2560x1440", "1280x960-stretched"]
+  "resolutions": [
+    { "id": "1920x1080", "width": 1920, "height": 1080, "displayMode": "native" },
+    { "id": "2560x1440", "width": 2560, "height": 1440, "displayMode": "native" },
+    { "id": "1280x960-stretched", "width": 1280, "height": 960, "displayMode": "4:3 stretched" }
+  ]
 }

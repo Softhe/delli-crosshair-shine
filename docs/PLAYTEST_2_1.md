@@ -6,7 +6,7 @@ Validate that players can import, tune, apply, and export a crosshair without as
 
 ## Participants
 
-Recruit 3–5 active CS2 players across at least two display configurations. Record only an anonymous participant label, resolution, aspect ratio, and completion observations. Do not collect Steam IDs, share codes, aliases, or contact details in this document.
+Recruit five active CS2 players across at least two display configurations for the release gate. An exploratory round may begin with three participants, but all five rows must be complete before 2.1 is released. Record only an anonymous participant label, display configuration, completion observations, and a 1–5 preview rating. Do not collect Steam IDs, share codes, aliases, or contact details in this document.
 
 ## Session script
 
@@ -20,11 +20,15 @@ Recruit 3–5 active CS2 players across at least two display configurations. Rec
 
 ## Results
 
-| Participant | Display | Completed unaided | Preview matched | Main friction | Follow-up |
-| --- | --- | --- | --- | --- | --- |
-| P1 | Pending | Pending | Pending | Pending | Pending |
-| P2 | Pending | Pending | Pending | Pending | Pending |
-| P3 | Pending | Pending | Pending | Pending | Pending |
+Use `Yes` or `No` for the completion and refresh columns, and an integer from 1–5 for preview accuracy. Keep every cell free of share codes or player-identifying information.
+
+| Participant | Display | Completed unaided | Edit survived refresh | Preview rating | Main friction | Follow-up |
+| --- | --- | --- | --- | --- | --- | --- |
+| P1 | Pending | Pending | Pending | Pending | Pending | Pending |
+| P2 | Pending | Pending | Pending | Pending | Pending | Pending |
+| P3 | Pending | Pending | Pending | Pending | Pending | Pending |
+| P4 | Pending | Pending | Pending | Pending | Pending | Pending |
+| P5 | Pending | Pending | Pending | Pending | Pending | Pending |
 
 ## Success criteria
 
@@ -32,3 +36,5 @@ Recruit 3–5 active CS2 players across at least two display configurations. Rec
 - No participant loses their edited crosshair after refresh.
 - Median perceived preview accuracy is at least 4/5.
 - Every repeated friction point becomes a scoped 2.1 backlog item.
+
+After completing the table and calibration evidence, run `pnpm verify:release-readiness`. The command is intentionally expected to fail while either external validation activity is pending.

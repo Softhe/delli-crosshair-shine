@@ -118,6 +118,7 @@ const CustomCrosshair = () => {
 	});
 	const desktopStudioLayout = useMediaQuery('(min-width: 1280px)');
 	const narrowStudioLayout = useMediaQuery('(max-width: 767px)');
+	const ultrawideStudioLayout = useMediaQuery('(min-width: 1600px)');
 	const suppressedDraftCode = useRef<string | null>(null);
 	const pendingUrlCode = useRef<string | undefined>(undefined);
 	const lastExternalHistoryCode = useRef<string | null>(null);
@@ -337,38 +338,38 @@ const CustomCrosshair = () => {
 	};
 
 	return (
-		<div className="mx-auto flex w-full max-w-7xl flex-col gap-3 pb-20 md:gap-4 md:pb-0">
+		<div className="mx-auto flex w-full max-w-7xl flex-col gap-2 pb-20 md:gap-4 md:pb-0 min-[1600px]:max-w-[1680px]">
 			<header>
-				<div className="space-y-1.5 md:space-y-2">
-					<div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+				<div className="space-y-1 md:space-y-2">
+					<div className="hidden items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary sm:inline-flex">
 						<CrosshairIcon className="h-3.5 w-3.5" /> One workspace
 					</div>
-					<h1 className="text-4xl font-semibold leading-tight tracking-normal text-foreground md:text-5xl">CS2 Crosshair Studio</h1>
-					<p className="max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg xl:leading-normal">Shift-Tab, paste a crosshair you spotted in your match, tune it, then download a ready-to-use CFG.</p>
+					<h1 className="text-3xl font-semibold leading-tight tracking-normal text-foreground sm:text-4xl md:text-5xl">CS2 Crosshair Studio</h1>
+					<p className="max-w-2xl text-sm leading-snug text-muted-foreground sm:text-base sm:leading-relaxed md:text-lg xl:leading-normal">Paste a crosshair, tune it, then download a ready-to-use CFG.</p>
 				</div>
 			</header>
 			{showGuide && <FirstRunGuide onDismiss={dismissGuide} />}
 
 			<Card data-testid="control-center" className="overflow-hidden border-white/10 bg-card/75 p-0 shadow-2xl shadow-black/25 backdrop-blur-xl">
-					<div className="flex flex-col gap-4 border-b border-white/10 bg-white/[0.03] px-5 py-4 md:px-6 lg:flex-row lg:items-center lg:justify-between">
-						<div><h2 className="text-lg font-semibold text-foreground">Studio workspace</h2><p className="text-sm text-muted-foreground">Every editor tool, preview, and export action in one compact surface.</p></div>
-						<div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+					<div className="flex flex-col gap-2 border-b border-white/10 bg-white/[0.03] px-3 py-3 sm:gap-4 sm:px-5 sm:py-4 md:px-6 lg:flex-row lg:items-center lg:justify-between">
+						<div><h2 className="text-base font-semibold text-foreground sm:text-lg">Studio workspace</h2><p className="hidden text-sm text-muted-foreground sm:block">Every editor tool, preview, and export action in one compact surface.</p></div>
+						<div className="flex items-end gap-2 sm:gap-3">
 							<fieldset className="min-w-0" aria-label="Visual palette">
-								<legend className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"><Palette className="h-3.5 w-3.5" />Palette</legend>
+								<legend className="sr-only sm:not-sr-only sm:mb-1.5 sm:flex sm:items-center sm:gap-1.5 sm:text-[11px] sm:font-semibold sm:uppercase sm:tracking-[0.14em] sm:text-muted-foreground"><Palette className="h-3.5 w-3.5" />Palette</legend>
 								<div className="grid grid-cols-3 gap-1 rounded-lg border border-white/10 bg-background/45 p-1">
-									{PALETTE_OPTIONS.map((option) => <button key={option.value} type="button" aria-pressed={palette === option.value} title={option.description} onClick={() => { setPalette(option.value); trackStudioEvent('palette_changed'); }} className={`flex min-h-9 items-center justify-center gap-2 rounded-md px-2.5 text-xs font-semibold transition-all ${palette === option.value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-white/[0.06] hover:text-foreground'}`}><span className="flex -space-x-1" aria-hidden="true"><span className="h-3 w-3 rounded-full border border-background" style={{ backgroundColor: option.colors[0] }} /><span className="h-3 w-3 rounded-full border border-background" style={{ backgroundColor: option.colors[1] }} /></span>{option.name}</button>)}
+									{PALETTE_OPTIONS.map((option) => <button key={option.value} type="button" aria-pressed={palette === option.value} title={option.description} onClick={() => { setPalette(option.value); trackStudioEvent('palette_changed'); }} className={`flex min-h-9 items-center justify-center gap-1.5 rounded-md px-2 text-[11px] font-semibold transition-all sm:gap-2 sm:px-2.5 sm:text-xs ${palette === option.value ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-white/[0.06] hover:text-foreground'}`}><span className="hidden -space-x-1 sm:flex" aria-hidden="true"><span className="h-3 w-3 rounded-full border border-background" style={{ backgroundColor: option.colors[0] }} /><span className="h-3 w-3 rounded-full border border-background" style={{ backgroundColor: option.colors[1] }} /></span>{option.name}</button>)}
 								</div>
 							</fieldset>
-							<Button onClick={handleReset} variant="outline" className="h-10 shrink-0 border-white/10 bg-white/[0.04]"><RotateCcw className="h-4 w-4" /> Reset</Button>
+							<Button onClick={handleReset} variant="outline" aria-label="Reset" className="h-10 shrink-0 border-white/10 bg-white/[0.04] px-3 sm:px-4"><RotateCcw className="h-4 w-4" /><span className="hidden sm:inline">Reset</span></Button>
 						</div>
 					</div>
 
-					<div data-testid="editor-layout" className="grid items-start xl:grid-cols-[minmax(0,1.08fr)_minmax(380px,0.92fr)]">
+					<div data-testid="editor-layout" className="studio-editor-layout grid items-start xl:grid-cols-[minmax(0,1.08fr)_minmax(380px,0.92fr)]">
 						<div data-testid="editor-left-stack" className="divide-y divide-white/10 xl:self-start xl:border-r xl:border-white/10">
 						<ImportControls code={importCode} error={importError} presets={PRESETS} onCodeChange={(value) => { setImportCode(value); setImportError(''); }} onPaste={handlePaste} onLoad={handleImport} onPreset={(next) => { trackStudioEvent('preset_selected'); applyCrosshair(next); }} />
 
 						<CustomizeControls crosshair={crosshair} customHexColor={customHexColor} customColorOpen={customColorOpen} onCustomColorOpenChange={setCustomColorOpen} onCustomColorChange={updateCustomColor} onNumberChange={updateNumber} onBooleanChange={updateBoolean} />
-						{desktopStudioLayout && <div className="p-4 md:p-5"><Suspense fallback={<div className="h-32 animate-pulse rounded-lg border border-white/10 bg-card/30" role="status" aria-label="Loading saved crosshairs" />}><CrosshairHistory key={historyKey} onSelectCrosshair={handleHistorySelect} /></Suspense></div>}
+						{desktopStudioLayout && !ultrawideStudioLayout ? <div className="p-4 md:p-5"><Suspense fallback={<div className="h-32 animate-pulse rounded-lg border border-white/10 bg-card/30" role="status" aria-label="Loading saved crosshairs" />}><CrosshairHistory key={historyKey} onSelectCrosshair={handleHistorySelect} /></Suspense></div> : null}
 						</div>
 
 						<div data-testid="editor-right-stack" className="divide-y divide-white/10 border-t border-white/10 xl:self-start xl:border-t-0">
@@ -382,10 +383,15 @@ const CustomCrosshair = () => {
 							<p className="text-xs text-muted-foreground">Tip: Ctrl + Enter copies the command.</p>
 						</section>
 						</div>
+						{ultrawideStudioLayout ? (
+							<aside data-testid="editor-library-column" className="min-w-0 border-l border-white/10 p-5">
+								<Suspense fallback={<div className="h-32 animate-pulse rounded-lg border border-white/10 bg-card/30" role="status" aria-label="Loading saved crosshairs" />}><CrosshairHistory key={historyKey} onSelectCrosshair={handleHistorySelect} /></Suspense>
+							</aside>
+						) : null}
 					</div>
 			</Card>
 
-			{!desktopStudioLayout && <Suspense fallback={<div className="h-32 animate-pulse rounded-lg border border-white/10 bg-card/30" role="status" aria-label="Loading saved crosshairs" />}><CrosshairHistory key={historyKey} onSelectCrosshair={handleHistorySelect} /></Suspense>}
+			{!desktopStudioLayout ? <Suspense fallback={<div className="h-32 animate-pulse rounded-lg border border-white/10 bg-card/30" role="status" aria-label="Loading saved crosshairs" />}><CrosshairHistory key={historyKey} onSelectCrosshair={handleHistorySelect} /></Suspense> : null}
 			{narrowStudioLayout && <MobileQuickActions onCopy={() => handleCopy(generateConsoleCommand(shareCode), 'Console command copied', true, 'copy_command')} onDownload={handleDownload} />}
 		</div>
 	);

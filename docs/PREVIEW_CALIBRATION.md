@@ -10,7 +10,7 @@ Capture each scenario from `docs/preview-reference-matrix.json` in CS2 at:
 - 2560×1440, UI scale 100%
 - 1280×960 stretched, UI scale 100%
 
-Use a static wall, stand still, disable weapon spread, and keep the same map position and brightness. Save images under `docs/preview-references/<scenario>/<resolution>-cs2.png`. Browser captures belong beside them as `<resolution>-browser.png`.
+Use a static wall, stand still, disable weapon spread, and keep the same map position and brightness. Save supplied game references in `artifacts/preview-calibration/` as `{scenario}-{resolution}-cs2.png`. Browser captures use the matching `{scenario}-{resolution}-browser.png` name.
 
 For each pair, record:
 
@@ -31,6 +31,16 @@ pnpm capture:preview
 ```
 
 This creates the browser half of the matrix in `artifacts/preview-calibration/`. Real CS2 captures must be supplied by a player; they must never be fabricated from the browser rendering.
+
+After adding the real CS2 references, run:
+
+```sh
+pnpm report:preview
+```
+
+Open `artifacts/preview-calibration/report.html` for side-by-side and 50% overlay comparisons. Set `REQUIRE_CS2_REFERENCES=1` when the command should fail if any of the 15 reference pairs is missing.
+
+Record the measured browser-minus-CS2 pixel difference for every applicable check in the matrix notes, change `captureStatus` to `calibrated` only after review, and run `pnpm verify:release-readiness`. That final command also verifies that all 30 browser/CS2 image files are present locally.
 
 ## Release rule
 

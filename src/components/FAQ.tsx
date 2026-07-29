@@ -1,11 +1,5 @@
 import { Card } from '@/components/ui/card';
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from '@/components/ui/accordion';
-import { HelpCircle } from 'lucide-react';
+import { ChevronDown, HelpCircle } from 'lucide-react';
 
 export const FAQ = () => {
 	const faqs = [
@@ -23,7 +17,7 @@ export const FAQ = () => {
 		},
 		{
 			question: "Is my data stored or sent anywhere?",
-			answer: "No! All processing happens locally in your browser. Your share codes and generated configs never leave your device. We don't have any servers collecting data. The only data stored is your recent history and favorites, which are saved locally in your browser's localStorage for your convenience."
+			answer: "Crosshair processing, history, favorites, and feedback choices stay locally in your browser. No analytics are transmitted automatically. If you choose to report feedback, the studio shows an exact preview of coarse diagnostics and your optional note before you explicitly open a prefilled GitHub issue. Crosshair codes, settings, aliases, URLs, and history are never included."
 		},
 		{
 			question: "My crosshair looks different in-game than in the preview. Why?",
@@ -38,18 +32,16 @@ export const FAQ = () => {
 				<h2 className="text-lg font-semibold text-neon-cyan">Quick help</h2>
 			</div>
 
-			<Accordion type="single" collapsible className="w-full">
+			<div className="w-full">
 				{faqs.map((faq, index) => (
-					<AccordionItem key={index} value={`item-${index}`}>
-						<AccordionTrigger className="py-3 text-left text-sm transition-colors hover:text-neon-cyan">
-							{faq.question}
-						</AccordionTrigger>
-						<AccordionContent className="text-muted-foreground leading-relaxed">
-							{faq.answer}
-						</AccordionContent>
-					</AccordionItem>
+					<details key={index} className="group border-b border-white/10">
+						<summary className="flex cursor-pointer list-none items-center justify-between py-3 text-left text-sm font-medium transition-colors hover:text-neon-cyan">
+							{faq.question}<ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" />
+						</summary>
+						<p className="pb-4 text-sm leading-relaxed text-muted-foreground">{faq.answer}</p>
+					</details>
 				))}
-			</Accordion>
+			</div>
 			<div className="mt-5 flex flex-wrap items-center gap-2 border-t border-white/10 pt-4 text-sm text-muted-foreground">
 				<span>Found a problem or have an idea?</span>
 				<a

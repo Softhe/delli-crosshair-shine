@@ -2,7 +2,6 @@ import { useRef, useState, type ChangeEvent, type MouseEvent } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Clock, Star, Trash2, Download, Copy, Share2, Database, Search, Upload, FileDown, FileUp } from 'lucide-react';
 import { exportAllData, getHistory, getFavorites, importAllData, removeFromHistory, renameHistoryItem, toggleFavorite, isFavorited } from '@/lib/storage';
 import type { CrosshairData } from '@/lib/storage';
@@ -264,25 +263,25 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 	};
 
 	return (
-		<Card data-testid="local-crosshair-library" className="card-gaming">
-			<div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+		<Card data-testid="local-crosshair-library" className="card-gaming p-3 md:p-6">
+			<div className="mb-2 flex flex-col gap-2 sm:mb-5 sm:flex-row sm:items-start sm:justify-between">
 				<div className="flex items-start gap-3">
 					<span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-primary"><Database className="h-4 w-4" /></span>
-					<div><h2 className="text-lg font-semibold text-foreground">Local crosshair library</h2><p className="text-sm text-muted-foreground">Codes you load or export are saved only in this browser.</p></div>
+					<div><h2 className="text-lg font-semibold text-foreground">Local crosshair library</h2><p className="text-xs text-muted-foreground sm:text-sm">Codes you load or export are saved only in this browser.</p></div>
 				</div>
-				<div className="flex flex-wrap gap-2">
+				<div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
 					<Button type="button" variant="outline" size="sm" onClick={handleExportBackup}><FileDown className="h-4 w-4" />Export backup</Button>
 					<Button type="button" variant="outline" size="sm" onClick={() => backupInputRef.current?.click()}><FileUp className="h-4 w-4" />Import backup</Button>
 					<input ref={backupInputRef} type="file" accept="application/json,.json" className="hidden" onChange={handleImportBackup} aria-label="Import crosshair backup" />
-					<span className="w-fit self-center rounded-full border border-success/25 bg-success/10 px-2.5 py-1 text-xs font-medium text-success">On this device</span>
+					<span className="hidden w-fit self-center rounded-full border border-success/25 bg-success/10 px-2.5 py-1 text-xs font-medium text-success sm:inline-flex">On this device</span>
 				</div>
 			</div>
-			<div className="mb-4">
+			<div className="mb-2 sm:mb-4">
 				<label htmlFor="history-search" className="sr-only">Search saved crosshairs</label>
 				<div className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="history-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by name or share code" className="pl-9" /></div>
 			</div>
 			<Tabs defaultValue="recent" className="w-full">
-				<TabsList className="mb-4 grid h-11 w-full grid-cols-2 p-0">
+				<TabsList className="mb-2 grid h-11 w-full grid-cols-2 p-0 sm:mb-4">
 					<TabsTrigger value="recent" className="flex h-full items-center gap-2">
 						<Clock className="w-4 h-4" />
 						Recent ({history.length})
@@ -303,13 +302,13 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 					) : filteredHistory.length === 0 ? (
 						<div className="text-center py-8 text-muted-foreground"><Search className="w-10 h-10 mx-auto mb-3 opacity-50" /><p>No matching crosshairs</p><p className="text-sm mt-1">Try a different name or share-code fragment.</p></div>
 					) : (
-						<ScrollArea className="max-h-[400px] pr-4">
+						<div className="max-h-[280px] overflow-y-auto pr-4">
 							<div className="space-y-3">
 								{filteredHistory.map((item) => (
 									<CrosshairItem key={item.id} item={item} />
 								))}
 							</div>
-						</ScrollArea>
+						</div>
 					)}
 				</TabsContent>
 
@@ -323,13 +322,13 @@ export const CrosshairHistory = ({ onSelectCrosshair }: CrosshairHistoryProps) =
 					) : filteredFavorites.length === 0 ? (
 						<div className="text-center py-8 text-muted-foreground"><Search className="w-10 h-10 mx-auto mb-3 opacity-50" /><p>No matching favorites</p><p className="text-sm mt-1">Try a different name or share-code fragment.</p></div>
 					) : (
-						<ScrollArea className="max-h-[400px] pr-4">
+						<div className="max-h-[280px] overflow-y-auto pr-4">
 							<div className="space-y-3">
 								{filteredFavorites.map((item) => (
 									<CrosshairItem key={item.id} item={item} showDelete={false} />
 								))}
 							</div>
-						</ScrollArea>
+						</div>
 					)}
 				</TabsContent>
 			</Tabs>
