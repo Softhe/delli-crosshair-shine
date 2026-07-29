@@ -2,6 +2,8 @@
 
 The browser preview is useful for editing, while CS2 remains the rendering authority. This workflow turns that caveat into a repeatable comparison instead of an informal visual check.
 
+For the player-facing capture procedure, exact share codes, display settings, and required filenames, follow [CS2 preview reference screenshot guide](CS2_SCREENSHOT_GUIDE.md).
+
 ## Reference matrix
 
 Capture each scenario from `docs/preview-reference-matrix.json` in CS2 at:

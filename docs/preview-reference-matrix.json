@@ -10,7 +10,7 @@
     { "id": "dot", "preset": "Dot", "checks": ["dot", "outline", "gap"] },
     { "id": "outlined", "preset": "High visibility", "checks": ["length", "thickness", "outline", "color"] },
     { "id": "classic", "preset": "Classic green", "checks": ["length", "gap", "dot", "color"] },
-    { "id": "partial-alpha", "shareCode": "CSGO-wAD3c-ykt5L-zvZ98-vBisR-6sWPA", "checks": ["alpha", "color"] }
+    { "id": "partial-alpha", "shareCode": "CSGO-RBZih-6Hynp-ieuGe-tTkVz-9PqNO", "checks": ["alpha", "color"] }
   ],
   "resolutions": [
     { "id": "1920x1080", "width": 1920, "height": 1080, "displayMode": "native" },
