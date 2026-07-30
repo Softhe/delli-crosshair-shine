@@ -59,6 +59,8 @@ Useful commands:
 | `pnpm test:utils` | Verify share-code and preview utility invariants. |
 | `pnpm test:e2e` | Build the site, then run the Playwright smoke tests at desktop and mobile widths. |
 | `pnpm capture:preview` | Capture browser-side preview references for the CS2 calibration matrix. |
+| `pnpm report:preview` | Build the side-by-side browser/CS2 calibration report. |
+| `pnpm verify:release-readiness` | Verify real CS2 references and the five-player 2.1 playtest evidence. |
 | `pnpm build` | Build `dist/`, prepare compatibility pages, and verify the production artifacts. |
 | `pnpm preview` | Serve the production build locally. |
 | `pnpm verify:build` | Verify the files and metadata in an existing `dist/`. |
@@ -78,7 +80,7 @@ public/                    Metadata, icons, crawler files, and CNAME
 .github/workflows/         Continuous integration and GitHub Pages deployment
 ```
 
-See [Architecture](docs/ARCHITECTURE.md), [Testing](docs/TESTING.md), and [Release and deployment](docs/RELEASE.md) for the maintained project documentation. Preview changes must also follow [Preview calibration](docs/PREVIEW_CALIBRATION.md), and user validation should follow the [2.1 playtest](docs/PLAYTEST_2_1.md).
+See [Architecture](docs/ARCHITECTURE.md), [Testing](docs/TESTING.md), and [Release and deployment](docs/RELEASE.md) for the maintained project documentation. Preview changes must follow [Preview calibration](docs/PREVIEW_CALIBRATION.md); players supplying the real reference images should use the exact [CS2 screenshot guide](docs/CS2_SCREENSHOT_GUIDE.md). User validation should follow the [2.1 playtest](docs/PLAYTEST_2_1.md).
 
 ## Deployment
 
